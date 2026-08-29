@@ -54,7 +54,9 @@ public static class ScreenshotHarness
         }
     }
 
-    private static void Log(string message)
+    /// <summary>Public so other code (e.g. MainWindow's Loaded handler) can add step-by-step
+    /// breadcrumbs to the same harness.log while <see cref="App.ScreenshotMode"/> is active.</summary>
+    public static void Log(string message)
     {
         _log?.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] {message}");
     }

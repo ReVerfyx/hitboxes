@@ -48,17 +48,35 @@ public partial class MainWindow : Window
 
         Loaded += async (_, _) =>
         {
+            if (App.ScreenshotMode) ScreenshotHarness.Log("MainWindow.Loaded: entered.");
+
             GlassWindowHelper.Enable(this);
+            if (App.ScreenshotMode) ScreenshotHarness.Log("MainWindow.Loaded: GlassWindowHelper.Enable done.");
+
             UiAnimations.FadeIn(this);
+            if (App.ScreenshotMode) ScreenshotHarness.Log("MainWindow.Loaded: FadeIn done.");
 
             await _themeService.StartAsync();
-            RefreshInstances();
+            if (App.ScreenshotMode) ScreenshotHarness.Log("MainWindow.Loaded: ThemeService.StartAsync done.");
 
-            _musicService.Volume = (float)_settings.MainMenuMusicVolume;
-            if (_settings.MainMenuMusicEnabled)
+            RefreshInstances();
+            if (App.ScreenshotMode) ScreenshotHarness.Log("MainWindow.Loaded: RefreshInstances done.");
+
+            // Music is inaudible in a screenshot and NAudio touches a real
+            // Windows audio device (WaveOutEvent) to play anything — the
+            // same class of native, not-managed-catchable risk the DWM
+            // P/Invoke call turned out to be on this CI image. Skip it
+            // outright here rather than relying on "no assets means Play()
+            // no-ops anyway".
+            if (!App.ScreenshotMode)
             {
-                _musicService.Play();
+                _musicService.Volume = (float)_settings.MainMenuMusicVolume;
+                if (_settings.MainMenuMusicEnabled)
+                {
+                    _musicService.Play();
+                }
             }
+            if (App.ScreenshotMode) ScreenshotHarness.Log("MainWindow.Loaded: music Play() done, handler exiting.");
         };
         Closed += (_, _) => _musicService.Dispose();
     }
