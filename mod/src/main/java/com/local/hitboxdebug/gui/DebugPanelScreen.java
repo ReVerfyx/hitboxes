@@ -33,33 +33,33 @@ public final class DebugPanelScreen extends Screen {
 		int y = height / 2 - 90;
 		int spacing = 24;
 
-		addDrawableChild(toggleButton(x, y, "hitboxdebug.panel.autofarm_mobs",
+		addButton(toggleButton(x, y, "hitboxdebug.panel.autofarm_mobs",
 				config.autoFarmMobsEnabled, v -> config.autoFarmMobsEnabled = v));
 
-		addDrawableChild(toggleButton(x, y + spacing, "hitboxdebug.panel.hitbox_visualizer",
+		addButton(toggleButton(x, y + spacing, "hitboxdebug.panel.hitbox_visualizer",
 				config.hitboxVisualizerEnabled, v -> config.hitboxVisualizerEnabled = v));
 
-		addDrawableChild(toggleButton(x, y + spacing * 2, "hitboxdebug.panel.autoeat",
+		addButton(toggleButton(x, y + spacing * 2, "hitboxdebug.panel.autoeat",
 				config.autoEatEnabled, v -> config.autoEatEnabled = v));
 
-		addDrawableChild(blueprintCycleButton(x, y + spacing * 3));
+		addButton(blueprintCycleButton(x, y + spacing * 3));
 
-		addDrawableChild(new ButtonWidget(x, y + spacing * 4, 200, 20,
+		addButton(new ButtonWidget(x, y + spacing * 4, 200, 20,
 				new TranslatableText("hitboxdebug.panel.farmbuilder.start"),
 				button -> startFarmBuilderAtPlayer()));
 
-		addDrawableChild(new ButtonWidget(x, y + spacing * 5, 200, 20,
+		addButton(new ButtonWidget(x, y + spacing * 5, 200, 20,
 				new TranslatableText("hitboxdebug.panel.farmbuilder.stop"),
 				button -> {
 					config.farmBuilderEnabled = false;
 					HitboxDebugClient.FARM_BUILDER.stop();
 				}));
 
-		addDrawableChild(toggleButton(x, y + spacing * 6, "hitboxdebug.panel.hitbox_expand",
+		addButton(toggleButton(x, y + spacing * 6, "hitboxdebug.panel.hitbox_expand",
 				config.hitboxExpandEnabled, v -> config.hitboxExpandEnabled = v));
 
-		addDrawableChild(new ButtonWidget(x, y + spacing * 7, 200, 20,
-				new LiteralText("Close"), button -> close()));
+		addButton(new ButtonWidget(x, y + spacing * 7, 200, 20,
+				new LiteralText("Close"), button -> onClose()));
 	}
 
 	private void startFarmBuilderAtPlayer() {

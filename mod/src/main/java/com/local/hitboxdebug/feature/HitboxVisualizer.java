@@ -5,7 +5,6 @@ import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.Tessellator;
-import net.minecraft.client.render.VertexFormat;
 import net.minecraft.client.render.VertexFormats;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
@@ -13,6 +12,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Matrix4f;
 import net.minecraft.util.math.Vec3d;
+import org.lwjgl.opengl.GL11;
 
 /**
  * Pure visual overlay: draws the real, unmodified bounding box of nearby
@@ -28,7 +28,7 @@ public final class HitboxVisualizer {
 			return;
 		}
 
-		MinecraftClient client = context.gameRenderer().getClient();
+		MinecraftClient client = MinecraftClient.getInstance();
 		if (client.player == null || client.world == null) {
 			return;
 		}
@@ -42,12 +42,13 @@ public final class HitboxVisualizer {
 		net.minecraft.client.render.RenderLayer.getLines();
 		BufferBuilder buffer = Tessellator.getInstance().getBuffer();
 
-		com.mojang.blaze3d.systems.RenderSystem.setShader(net.minecraft.client.render.GameRenderer::getPositionColorShader);
+		// 1.16.5 predates the shader-based render pipeline (no RenderSystem.setShader) —
+		// this is the fixed-function immediate-mode path it actually has.
 		com.mojang.blaze3d.systems.RenderSystem.lineWidth(2.0f);
 		com.mojang.blaze3d.systems.RenderSystem.disableTexture();
 		com.mojang.blaze3d.systems.RenderSystem.enableBlend();
 		com.mojang.blaze3d.systems.RenderSystem.defaultBlendFunc();
-		buffer.begin(VertexFormat.DrawMode.LINES, VertexFormats.POSITION_COLOR);
+		buffer.begin(GL11.GL_LINES, VertexFormats.POSITION_COLOR);
 
 		Box searchBox = client.player.getBoundingBox().expand(RENDER_RADIUS);
 		for (Entity entity : client.world.getEntitiesByClass(Entity.class, searchBox,
@@ -63,7 +64,7 @@ public final class HitboxVisualizer {
 
 	private void drawBox(BufferBuilder buffer, MatrixStack matrices, Box b,
 			float r, float g, float bCol, float a) {
-		Matrix4f m = matrices.peek().getPositionMatrix();
+		Matrix4f m = matrices.peek().getModel();
 		float[][] corners = {
 				{(float) b.minX, (float) b.minY, (float) b.minZ}, {(float) b.maxX, (float) b.minY, (float) b.minZ},
 				{(float) b.maxX, (float) b.minY, (float) b.minZ}, {(float) b.maxX, (float) b.minY, (float) b.maxZ},

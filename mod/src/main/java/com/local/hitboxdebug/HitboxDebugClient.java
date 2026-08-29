@@ -50,7 +50,7 @@ public final class HitboxDebugClient implements ClientModInitializer {
 
 		while (openPanelKey.wasPressed()) {
 			if (client.currentScreen == null) {
-				client.setScreen(new DebugPanelScreen());
+				client.openScreen(new DebugPanelScreen());
 			}
 		}
 

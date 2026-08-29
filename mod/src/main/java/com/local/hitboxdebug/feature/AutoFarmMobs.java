@@ -91,7 +91,7 @@ public final class AutoFarmMobs {
 				net.minecraft.world.RaycastContext.ShapeType.COLLIDER,
 				net.minecraft.world.RaycastContext.FluidHandling.NONE,
 				player));
-		return hit.getType() == HitResult.Type.NONE
+		return hit.getType() == HitResult.Type.MISS
 				|| (hit instanceof EntityHitResult && ((EntityHitResult) hit).getEntity() == mob);
 	}
 }

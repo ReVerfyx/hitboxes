@@ -119,13 +119,13 @@ public final class AutoFarmBuilder {
 	private Hand findItemHand(ClientPlayerEntity player, Item item) {
 		for (Hand hand : Hand.values()) {
 			ItemStack stack = player.getStackInHand(hand);
-			if (stack.isOf(item)) {
+			if (stack.getItem() == item) {
 				return hand;
 			}
 		}
-		for (int i = 0; i < player.getInventory().main.size(); i++) {
-			if (player.getInventory().main.get(i).isOf(item)) {
-				player.getInventory().selectedSlot = Math.min(i, 8);
+		for (int i = 0; i < player.inventory.main.size(); i++) {
+			if (player.inventory.main.get(i).getItem() == item) {
+				player.inventory.selectedSlot = Math.min(i, 8);
 				return Hand.MAIN_HAND;
 			}
 		}
