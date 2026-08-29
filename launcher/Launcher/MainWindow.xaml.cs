@@ -1,5 +1,6 @@
 using System.IO;
 using System.Windows;
+using System.Windows.Controls;
 using Hitboxes.Launcher.Models;
 using Hitboxes.Launcher.Services;
 
