@@ -13,6 +13,11 @@ public final class ModConfig {
 	public boolean hitboxVisualizerEnabled = false;
 	public boolean autoEatEnabled = false;
 	public boolean farmBuilderEnabled = false;
+	public boolean hitboxExpandEnabled = false;
+
+	/** Blocks added to each side of a mob's hit-detection box when hitbox
+	 *  enlargement is on. Never applied to {@link net.minecraft.entity.player.PlayerEntity}. */
+	public double hitboxExpandAmount = 0.25;
 
 	/** Radius (blocks) auto-farm mobs will search for animals. */
 	public double autoFarmRadius = 8.0;

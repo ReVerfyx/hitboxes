@@ -1,11 +1,12 @@
 {
-  "key.hitboxdebug.open_panel": "Open Debug Panel",
-  "category.hitboxdebug": "Hitbox Debug Panel",
+  "key.hitboxdebug.open_panel": "Open ReVerfyx Client Panel",
+  "category.hitboxdebug": "ReVerfyx Client",
 
-  "hitboxdebug.panel.title": "Debug Panel — Singleplayer / Local World Only",
+  "hitboxdebug.panel.title": "ReVerfyx Client — Singleplayer / Local World Only",
   "hitboxdebug.panel.warning": "These tools automate gameplay. They disable themselves whenever another real player is nearby.",
   "hitboxdebug.panel.autofarm_mobs": "Auto-farm mobs (animals only)",
   "hitboxdebug.panel.hitbox_visualizer": "Show mob hitboxes",
+  "hitboxdebug.panel.hitbox_expand": "Enlarge mob hitboxes (never players)",
   "hitboxdebug.panel.autoeat": "Auto-eat golden/enchanted apples",
   "hitboxdebug.panel.farmbuilder": "Auto farm builder",
   "hitboxdebug.panel.farmbuilder.select": "Select blueprint",

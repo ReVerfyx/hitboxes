@@ -1,4 +1,7 @@
 plugins {
+	// Loom's 0.10.x branch only ever published its plugin marker as a
+	// snapshot on Fabric's own Maven (pluginManagement in settings.gradle
+	// points at it) — there is no non-SNAPSHOT '0.10.x' release to pin to.
 	id 'fabric-loom' version '0.10-SNAPSHOT'
 	id 'maven-publish'
 }
@@ -35,8 +38,4 @@ tasks.withType(JavaCompile).configureEach {
 
 java {
 	withSourcesJar()
-}
-
-jar {
-	from("LICENSE")
 }

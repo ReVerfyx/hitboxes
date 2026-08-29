@@ -1,0 +1,81 @@
+name: Build ReVerfyx Client
+
+on:
+  push:
+    branches: [main, redux]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build-mod:
+    name: ReVerfyx Client mod
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - name: Grant execute permission
+        run: chmod +x mod/gradlew
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+      - name: Build mod
+        working-directory: mod
+        run: ./gradlew build --no-daemon
+      - name: Upload mod
+        uses: actions/upload-artifact@v4
+        with:
+          name: reverfyx-client-mod
+          path: mod/build/libs/*.jar
+          if-no-files-found: error
+
+  build-launcher:
+    name: ReVerfyx Launcher (.exe)
+    runs-on: windows-latest
+    needs: build-mod
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+      - name: Restore
+        run: dotnet restore launcher/Launcher.sln
+      - name: Build
+        run: dotnet build launcher/Launcher.sln --configuration Release --no-restore
+      - name: Publish self-contained Windows executable
+        run: >
+          dotnet publish launcher/Launcher/Launcher.csproj
+          --configuration Release
+          --runtime win-x64
+          --self-contained true
+          --output publish
+          -p:PublishSingleFile=true
+          -p:IncludeNativeLibrariesForSelfExtract=true
+          -p:EnableCompressionInSingleFile=true
+      - name: Download mod artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: reverfyx-client-mod
+          path: mod-artifact
+      - name: Bundle mod
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path publish\bundled-mod | Out-Null
+          Get-ChildItem mod-artifact\*.jar |
+            Where-Object { $_.Name -notlike '*-sources.jar' } |
+            Copy-Item -Destination publish\bundled-mod
+      - name: Upload ready-to-run EXE
+        uses: actions/upload-artifact@v4
+        with:
+          name: ReVerfyx-Launcher-Windows-x64
+          path: publish/ReVerfyxClientLauncher.exe
+          if-no-files-found: error
+      - name: Upload launcher bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: ReVerfyx-Launcher-Bundle-Windows-x64
+          path: publish/
+          if-no-files-found: error

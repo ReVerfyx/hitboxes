@@ -35,11 +35,16 @@ public final class Blueprints {
 	}
 
 	public static FarmBlueprint get(Type type) {
-		return switch (type) {
-			case SIMPLE_CROP_FIELD -> simpleCropField();
-			case SUGAR_CANE_FARM -> sugarCaneFarm();
-			case ANIMAL_PEN -> animalPen();
-		};
+		switch (type) {
+			case SIMPLE_CROP_FIELD:
+				return simpleCropField();
+			case SUGAR_CANE_FARM:
+				return sugarCaneFarm();
+			case ANIMAL_PEN:
+				return animalPen();
+			default:
+				throw new IllegalArgumentException("Unknown blueprint type: " + type);
+		}
 	}
 
 	/** 9x9 area, y=0 is the farmland/water layer. Water source at the center (4,0,4). */

@@ -51,7 +51,7 @@ public final class AutoEat {
 	private Hand findAppleHand(ClientPlayerEntity player) {
 		for (Hand hand : Hand.values()) {
 			ItemStack stack = player.getStackInHand(hand);
-			if (stack.isOf(Items.GOLDEN_APPLE) || stack.isOf(Items.ENCHANTED_GOLDEN_APPLE)) {
+			if (stack.getItem() == Items.GOLDEN_APPLE || stack.getItem() == Items.ENCHANTED_GOLDEN_APPLE) {
 				return hand;
 			}
 		}
