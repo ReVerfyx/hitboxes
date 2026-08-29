@@ -1,35 +1,30 @@
-name: Build
+name: Build ReVerfyx Client
 
 on:
   push:
-    branches: [main]
+    branches: [main, redux]
   pull_request:
   workflow_dispatch:
 
 jobs:
   build-mod:
-    name: Mod (Fabric / Gradle)
+    name: ReVerfyx Client mod
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - name: Setup JDK
         uses: actions/setup-java@v4
         with:
-          distribution: "temurin"
+          distribution: temurin
           java-version: "17"
-
-      - name: Grant execute permission for gradlew
+      - name: Grant execute permission
         run: chmod +x mod/gradlew
-
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
-
       - name: Build mod
         working-directory: mod
         run: ./gradlew build --no-daemon
-
-      - name: Upload mod artifact
+      - name: Upload mod
         uses: actions/upload-artifact@v4
         with:
           name: reverfyx-client-mod
@@ -37,101 +32,50 @@ jobs:
           if-no-files-found: error
 
   build-launcher:
-    name: Launcher (.NET / WPF)
+    name: ReVerfyx Launcher (.exe)
     runs-on: windows-latest
     needs: build-mod
     steps:
       - uses: actions/checkout@v4
-
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: "8.0.x"
-
       - name: Restore
         run: dotnet restore launcher/Launcher.sln
-
       - name: Build
         run: dotnet build launcher/Launcher.sln --configuration Release --no-restore
-
-      - name: Publish
+      - name: Publish self-contained Windows executable
         run: >
           dotnet publish launcher/Launcher/Launcher.csproj
           --configuration Release
+          --runtime win-x64
+          --self-contained true
           --output publish
-          --self-contained false
-
+          -p:PublishSingleFile=true
+          -p:IncludeNativeLibrariesForSelfExtract=true
+          -p:EnableCompressionInSingleFile=true
       - name: Download mod artifact
         uses: actions/download-artifact@v4
         with:
           name: reverfyx-client-mod
           path: mod-artifact
-
-      - name: Bundle ReVerfyx Client mod into launcher output
+      - name: Bundle mod
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force -Path publish\bundled-mod | Out-Null
           Get-ChildItem mod-artifact\*.jar |
             Where-Object { $_.Name -notlike '*-sources.jar' } |
             Copy-Item -Destination publish\bundled-mod
-
-      - name: Upload launcher artifact
+      - name: Upload ready-to-run EXE
         uses: actions/upload-artifact@v4
         with:
-          name: reverfyx-client-launcher-windows
+          name: ReVerfyx-Launcher-Windows-x64
+          path: publish/ReVerfyxClientLauncher.exe
+          if-no-files-found: error
+      - name: Upload launcher bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: ReVerfyx-Launcher-Bundle-Windows-x64
           path: publish/
           if-no-files-found: error
-
-      - name: Capture UI screenshots
-        shell: pwsh
-        run: |
-          # The exe's window-compositing path has turned out to be flaky on
-          # this specific CI VM (crash point moves between runs — sometimes
-          # after fully rendering the first window, sometimes before it even
-          # writes its own log file — consistent with the runner's graphics
-          # stack, not our code). Retry the whole process a few times and
-          # keep whichever attempt actually produced PNGs.
-          #
-          # NOTE: plain `& .\exe args` does NOT reliably block until this
-          # particular (non-console, "Windows" subsystem) exe exits — the
-          # previous attempt showed later retries colliding with harness.log
-          # / crash.log still held open by an earlier attempt's process that
-          # was, in fact, still alive. Start-Process -Wait uses a real
-          # WaitForExit() and actually blocks.
-          $maxAttempts = 5
-          for ($i = 1; $i -le $maxAttempts; $i++) {
-            Write-Host "--- capture attempt $i/$maxAttempts ---"
-            Get-Process ReVerfyxClientLauncher -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
-            Remove-Item -Path screenshots -Recurse -Force -ErrorAction SilentlyContinue
-            $proc = Start-Process -FilePath ".\publish\ReVerfyxClientLauncher.exe" `
-              -ArgumentList "--capture-screenshots", "${{ github.workspace }}\screenshots" `
-              -Wait -PassThru -NoNewWindow
-            Write-Host "exit code: $($proc.ExitCode)"
-            $pngCount = (Get-ChildItem -Path screenshots -Filter *.png -ErrorAction SilentlyContinue | Measure-Object).Count
-            Write-Host "PNGs produced: $pngCount"
-            if ($pngCount -gt 0) {
-              break
-            }
-          }
-          if ($pngCount -eq 0) {
-            Write-Host "##[error]No screenshots were produced after $maxAttempts attempts — failing so this shows up as a real CI failure instead of silently passing."
-            exit 1
-          }
-
-      - name: Print harness log
-        if: always()
-        shell: pwsh
-        run: |
-          Write-Host "--- screenshots dir listing ---"
-          Get-ChildItem -Path screenshots -ErrorAction SilentlyContinue | Format-Table Name, Length
-          Write-Host "--- harness.log ---"
-          Get-Content -Path screenshots\harness.log -ErrorAction SilentlyContinue
-          Write-Host "--- crash.log ---"
-          Get-Content -Path screenshots\crash.log -ErrorAction SilentlyContinue
-
-      - name: Upload screenshots
-        uses: actions/upload-artifact@v4
-        with:
-          name: reverfyx-client-launcher-screenshots
-          path: screenshots/
-          if-no-files-found: warn
