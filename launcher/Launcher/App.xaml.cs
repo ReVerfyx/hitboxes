@@ -31,6 +31,15 @@ public partial class App : Application
             ScreenshotMode = true;
             string outputDir = e.Args[captureIndex + 1];
 
+            // The crash moves around between runs (once right after window
+            // construction, once during Show() itself) with nothing ever
+            // logged — consistent with an unreliable GPU/D3D stack on this
+            // CI VM rather than one specific line of our own code. Force
+            // WPF's software rasterizer instead of hardware-accelerated
+            // rendering, the standard fix for WPF apps on headless/RDP/CI
+            // machines with no dependable graphics driver.
+            System.Windows.Media.RenderOptions.ProcessRenderMode = System.Windows.Interop.RenderMode.SoftwareOnly;
+
             // The previous CI attempt's harness.log stopped mid-construction
             // of the first window with no exception logged at all — pointing
             // at something that crashes past normal try/catch. Wire up every
