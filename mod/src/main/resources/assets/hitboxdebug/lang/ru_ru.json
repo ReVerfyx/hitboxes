@@ -1,0 +1,19 @@
+{
+  "key.hitboxdebug.open_panel": "Открыть панель ReVerfyx Client",
+  "category.hitboxdebug": "ReVerfyx Client",
+  "hitboxdebug.panel.title": "ReVerfyx Client",
+  "hitboxdebug.panel.warning": "Автоматизация работает только в одиночной/локальной игре.",
+  "hitboxdebug.panel.autofarm_mobs": "Авто-фарм мобов",
+  "hitboxdebug.panel.hitbox_visualizer": "Показывать хитбоксы мобов",
+  "hitboxdebug.panel.hitbox_expand": "Расширять хитбоксы мобов",
+  "hitboxdebug.panel.autoeat": "Авто-поедание золотых яблок",
+  "hitboxdebug.panel.farmbuilder": "Авто-строитель ферм",
+  "hitboxdebug.panel.farmbuilder.select": "Выбрать чертёж",
+  "hitboxdebug.panel.farmbuilder.start": "Начать строительство",
+  "hitboxdebug.panel.farmbuilder.stop": "Остановить строительство",
+  "hitboxdebug.message.players_nearby": "Автоматизация приостановлена: рядом другой игрок.",
+  "hitboxdebug.message.builder_need_corners": "Сначала задайте две точки.",
+  "hitboxdebug.message.builder_progress": "Авто-строитель: %s / %s блоков",
+  "hitboxdebug.message.builder_done": "Авто-строитель завершён.",
+  "hitboxdebug.message.builder_missing_items": "Авто-строитель приостановлен: нет предмета %s."
+}
