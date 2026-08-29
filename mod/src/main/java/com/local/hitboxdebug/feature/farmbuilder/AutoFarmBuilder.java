@@ -33,7 +33,7 @@ public final class AutoFarmBuilder {
 	private int cooldown;
 	private boolean waitingForMove;
 
-	public void start(FarmBlueprint.Type type, BlockPos originCorner) {
+	public void start(Blueprints.Type type, BlockPos originCorner) {
 		this.activeBlueprint = Blueprints.get(type);
 		this.origin = originCorner;
 		this.stepIndex = 0;
