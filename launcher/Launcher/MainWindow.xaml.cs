@@ -25,6 +25,7 @@ public partial class MainWindow : Window
 
     public MainWindow()
     {
+        ThemeResources.Register(Resources);
         InitializeComponent();
 
         _settingsService = new SettingsService(_rootDir);

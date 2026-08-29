@@ -14,6 +14,7 @@ public partial class InstanceSettingsWindow : Window
 
     public InstanceSettingsWindow(Instance instance, InstanceService instanceService, LauncherSettings settings)
     {
+        ThemeResources.Register(Resources);
         InitializeComponent();
         _instance = instance;
         _instanceService = instanceService;

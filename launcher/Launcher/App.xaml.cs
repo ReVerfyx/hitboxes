@@ -17,10 +17,13 @@ public partial class App : Application
     {
         base.OnStartup(e);
 
-        // Register the shared animatable theme brushes before any window
-        // is created so its DynamicResource bindings resolve immediately
-        // instead of flashing unstyled.
-        ThemeResources.Register(Resources);
+        // Deliberately NOT registered into Application.Resources: WPF
+        // auto-freezes Freezable resources (brushes included) added to the
+        // Application-level dictionary, which would make them impossible
+        // to animate ("sealed or frozen" InvalidOperationException). Each
+        // window registers the same shared brush instances into its own
+        // (non-frozen) Resources instead — see ThemeResources.Register
+        // calls in MainWindow/SettingsWindow/NewInstanceWindow/InstanceSettingsWindow.
 
         int captureIndex = Array.IndexOf(e.Args, "--capture-screenshots");
         if (captureIndex >= 0 && captureIndex + 1 < e.Args.Length)

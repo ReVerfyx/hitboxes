@@ -13,6 +13,7 @@ public partial class SettingsWindow : Window
 
     public SettingsWindow(LauncherSettings current)
     {
+        ThemeResources.Register(Resources);
         InitializeComponent();
         Result = current;
 

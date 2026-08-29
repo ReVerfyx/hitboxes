@@ -4,18 +4,28 @@ using System.Windows.Media;
 namespace Hitboxes.Launcher.Theming;
 
 /// <summary>
-/// Shared, animatable brush instances registered once into
-/// <c>Application.Current.Resources</c>. XAML references them the normal
-/// way via <c>{DynamicResource ...Brush}</c>; because a WPF brush is a
-/// live reference type, animating <see cref="SolidColorBrush.Color"/> (or
-/// a gradient stop's Color) here updates every control using it at once —
-/// that's what gives the day/night/rain switch and the glass tint change
-/// a smooth cross-fade instead of an abrupt swap.
+/// Shared, animatable brush instances, registered into each Window's own
+/// (non-frozen) <c>Resources</c> — deliberately never into
+/// <c>Application.Resources</c>, since WPF auto-freezes Freezable
+/// resources added there, which would make them impossible to animate.
+/// XAML references them the normal way via <c>{DynamicResource ...Brush}</c>;
+/// because a WPF brush is a live reference type, animating
+/// <see cref="SolidColorBrush.Color"/> (or a gradient stop's Color) here
+/// updates every control using it at once — that's what gives the
+/// day/night/rain switch and the glass tint change a smooth cross-fade
+/// instead of an abrupt swap. Every brush (including the gradient and its
+/// stops) is built exactly once as a singleton: constructing a fresh
+/// <see cref="GradientStopCollection"/> per window would try to give the
+/// same shared <see cref="GradientStop"/> instances multiple simultaneous
+/// inheritance contexts, which WPF rejects.
 /// </summary>
 public static class ThemeResources
 {
     public static readonly GradientStop BackgroundTopStop = new(ThemePalettes.Day.BackgroundTop, 0);
     public static readonly GradientStop BackgroundBottomStop = new(ThemePalettes.Day.BackgroundBottom, 1);
+    public static readonly LinearGradientBrush BackgroundBrush = new(
+        new GradientStopCollection { BackgroundTopStop, BackgroundBottomStop },
+        new Point(0, 0), new Point(0, 1));
     public static readonly SolidColorBrush PanelBrush = new(ThemePalettes.Day.Panel);
     public static readonly SolidColorBrush TextPrimaryBrush = new(ThemePalettes.Day.TextPrimary);
     public static readonly SolidColorBrush TextSecondaryBrush = new(ThemePalettes.Day.TextSecondary);
@@ -28,9 +38,7 @@ public static class ThemeResources
 
     public static void Register(ResourceDictionary resources)
     {
-        resources["BackgroundBrush"] = new LinearGradientBrush(
-            new GradientStopCollection { BackgroundTopStop, BackgroundBottomStop },
-            new Point(0, 0), new Point(0, 1));
+        resources["BackgroundBrush"] = BackgroundBrush;
         resources["PanelBrush"] = PanelBrush;
         resources["TextPrimaryBrush"] = TextPrimaryBrush;
         resources["TextSecondaryBrush"] = TextSecondaryBrush;

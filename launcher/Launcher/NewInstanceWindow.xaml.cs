@@ -12,6 +12,7 @@ public partial class NewInstanceWindow : Window
 
     public NewInstanceWindow(MinecraftVersionService versionService, InstanceService instanceService)
     {
+        ThemeResources.Register(Resources);
         InitializeComponent();
         _versionService = versionService;
         _instanceService = instanceService;
