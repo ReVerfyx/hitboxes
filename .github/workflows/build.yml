@@ -87,6 +87,15 @@ jobs:
         shell: pwsh
         continue-on-error: true
 
+      - name: Print harness log
+        if: always()
+        shell: pwsh
+        run: |
+          Write-Host "--- screenshots dir listing ---"
+          Get-ChildItem -Path screenshots -ErrorAction SilentlyContinue | Format-Table Name, Length
+          Write-Host "--- harness.log ---"
+          Get-Content -Path screenshots\harness.log -ErrorAction SilentlyContinue
+
       - name: Upload screenshots
         uses: actions/upload-artifact@v4
         with:
