@@ -61,6 +61,9 @@ public final class DebugPanelScreen extends Screen {
 					HitboxDebugClient.FARM_BUILDER.stop();
 				}));
 
+		addDrawableChild(toggleButton(x, y + spacing * 6, "hitboxdebug.panel.hitbox_expand",
+				config.hitboxExpandEnabled, v -> config.hitboxExpandEnabled = v));
+
 		addDrawableChild(new ButtonWidget(x, y + spacing * 7, 200, 20,
 				new LiteralText("Close"), button -> close()));
 	}

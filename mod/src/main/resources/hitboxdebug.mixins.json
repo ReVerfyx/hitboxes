@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.local.hitboxdebug.mixin",
+  "compatibilityLevel": "JAVA_8",
+  "client": [
+    "EntityHitboxMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

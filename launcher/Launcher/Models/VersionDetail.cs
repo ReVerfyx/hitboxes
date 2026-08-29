@@ -71,6 +71,14 @@ public sealed class Library
 
     [JsonPropertyName("natives")]
     public Dictionary<string, string>? Natives { get; set; }
+
+    /// <summary>
+    /// Fabric-style libraries (loader/meta.fabricmc.net) give a Maven repo
+    /// base URL here instead of a Mojang-style "downloads.artifact" block;
+    /// the artifact's relative path is then derived from <see cref="Name"/>.
+    /// </summary>
+    [JsonPropertyName("url")]
+    public string? Url { get; set; }
 }
 
 public sealed class LibraryDownloads

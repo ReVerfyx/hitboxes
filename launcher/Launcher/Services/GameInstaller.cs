@@ -53,6 +53,17 @@ public sealed class GameInstaller
                 await DownloadIfMissingAsync(artifact.Url, libPath, artifact.Sha1);
                 classpathEntries.Add(libPath);
             }
+            else if (!string.IsNullOrEmpty(library.Url) && !string.IsNullOrEmpty(library.Name))
+            {
+                // Fabric-style entry: "name" is a Maven coordinate, "url" is
+                // the repo base — derive the standard Maven layout path.
+                string relativePath = MavenCoordinateToPath(library.Name);
+                string libPath = Path.Combine(LibrariesDir, relativePath.Replace('/', Path.DirectorySeparatorChar));
+                string url = library.Url.TrimEnd('/') + "/" + relativePath;
+                progress?.Report($"Библиотека {library.Name}...");
+                await DownloadIfMissingAsync(url, libPath, expectedSha1: null);
+                classpathEntries.Add(libPath);
+            }
 
             if (library.Natives is { } natives && natives.TryGetValue("windows", out string? classifierKey)
                 && library.Downloads?.Classifiers is { } classifiers
@@ -146,6 +157,17 @@ public sealed class GameInstaller
             allowed = rule.Action == "allow";
         }
         return allowed;
+    }
+
+    /// <summary>"group.id:artifact:version[:classifier]" -&gt; standard Maven repo-relative path.</summary>
+    private static string MavenCoordinateToPath(string coordinate)
+    {
+        string[] parts = coordinate.Split(':');
+        string group = parts[0].Replace('.', '/');
+        string artifact = parts[1];
+        string version = parts[2];
+        string classifierSuffix = parts.Length > 3 ? $"-{parts[3]}" : string.Empty;
+        return $"{group}/{artifact}/{version}/{artifact}-{version}{classifierSuffix}.jar";
     }
 
     private static void ExtractNatives(string nativeJarPath, string destinationDir)

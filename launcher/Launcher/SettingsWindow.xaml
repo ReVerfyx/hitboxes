@@ -1,0 +1,45 @@
+<Window x:Class="Hitboxes.Launcher.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Настройки лаунчера" Height="480" Width="440"
+        Background="{DynamicResource BackgroundBrush}"
+        WindowStartupLocation="CenterOwner" ResizeMode="NoResize">
+
+    <StackPanel Margin="20">
+        <TextBlock Text="Java (по умолчанию для новых сборок)" FontWeight="SemiBold"
+                   Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,4" />
+        <TextBox x:Name="JavaPathBox" Padding="8" Margin="0,0,0,16" />
+
+        <TextBlock Text="Память, МБ (мин / макс)" FontWeight="SemiBold"
+                   Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,4" />
+        <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+            <TextBox x:Name="MemMinBox" Width="90" Padding="8" Margin="0,0,8,0" />
+            <TextBox x:Name="MemMaxBox" Width="90" Padding="8" />
+        </StackPanel>
+
+        <TextBlock Text="Дополнительные аргументы JVM" FontWeight="SemiBold"
+                   Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,4" />
+        <TextBox x:Name="JvmArgsBox" Padding="8" Margin="0,0,0,16" />
+
+        <Separator Margin="0,0,0,16" />
+
+        <CheckBox x:Name="MusicEnabledBox" Content="Музыка C418 в главном меню"
+                  Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,8" />
+        <TextBlock Text="Громкость музыки" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,4" />
+        <Slider x:Name="MusicVolumeSlider" Minimum="0" Maximum="1" Margin="0,0,0,16" />
+
+        <Separator Margin="0,0,0,16" />
+
+        <CheckBox x:Name="RainAutoDetectBox" Content="Автоопределение дождя по погоде (OpenWeatherMap)"
+                  Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,8" />
+        <TextBox x:Name="WeatherApiKeyBox" Padding="8" Margin="0,0,0,8"
+                 Tag="API-ключ OpenWeatherMap" />
+        <TextBox x:Name="WeatherCityBox" Padding="8" Margin="0,0,0,16" />
+
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button Content="Отмена" Padding="12,6" Margin="0,0,8,0" Click="Cancel_Click" />
+            <Button Content="Сохранить" Padding="12,6" Background="{DynamicResource AccentBrush}"
+                    Foreground="White" BorderThickness="0" Click="Save_Click" />
+        </StackPanel>
+    </StackPanel>
+</Window>

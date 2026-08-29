@@ -1,0 +1,68 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build-launcher:
+    name: Launcher (.NET / WPF)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Restore
+        run: dotnet restore launcher/Launcher.sln
+
+      - name: Build
+        run: dotnet build launcher/Launcher.sln --configuration Release --no-restore
+
+      - name: Publish
+        run: >
+          dotnet publish launcher/Launcher/Launcher.csproj
+          --configuration Release
+          --output publish
+          --self-contained false
+
+      - name: Upload launcher artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: hitboxes-launcher-windows
+          path: publish/
+          if-no-files-found: error
+
+  build-mod:
+    name: Mod (Fabric / Gradle)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "17"
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x mod/gradlew
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Build mod
+        working-directory: mod
+        run: ./gradlew build --no-daemon
+
+      - name: Upload mod artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: hitboxdebug-mod
+          path: mod/build/libs/*.jar
+          if-no-files-found: error

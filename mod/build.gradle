@@ -1,5 +1,7 @@
 plugins {
-	id 'fabric-loom' version '0.10-SNAPSHOT'
+	// Pin to a released Loom version, not a -SNAPSHOT — bump this if it's
+	// no longer resolvable on the Gradle Plugin Portal / Fabric Maven.
+	id 'fabric-loom' version '0.10.75'
 	id 'maven-publish'
 }
 
@@ -35,8 +37,4 @@ tasks.withType(JavaCompile).configureEach {
 
 java {
 	withSourcesJar()
-}
-
-jar {
-	from("LICENSE")
 }
