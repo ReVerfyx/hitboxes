@@ -21,7 +21,7 @@ public sealed class ModrinthService
     public ModrinthService()
     {
         _http = new HttpClient();
-        _http.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("HitboxesLauncher", "0.1.0"));
+        _http.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("ReVerfyxClientLauncher", "0.1.0"));
     }
 
     public async Task<List<ModrinthProject>> SearchModsAsync(string query, string mcVersion, string loader = "fabric")

@@ -17,6 +17,11 @@ namespace Hitboxes.Launcher.Theming;
 /// available to run the app in interactively outside of the real Windows
 /// runner GitHub Actions provides, so this mode runs there and the PNGs
 /// come back as a build artifact.
+///
+/// Writes a harness.log alongside the PNGs regardless of outcome — the
+/// first run of this produced a clean exit (code 0) but zero PNG files,
+/// with no exception anywhere, so the log exists specifically to pin down
+/// what actually happened step by step on the next attempt.
 /// </summary>
 public static class ScreenshotHarness
 {
@@ -26,9 +31,37 @@ public static class ScreenshotHarness
         new VersionEntry { Id = "1.16.5", Type = "release", Url = "", ReleaseTime = DateTimeOffset.UtcNow.AddYears(-4) },
     };
 
+    private static StreamWriter? _log;
+
     public static void Run(string outputDir)
     {
         Directory.CreateDirectory(outputDir);
+        _log = new StreamWriter(Path.Combine(outputDir, "harness.log")) { AutoFlush = true };
+
+        try
+        {
+            RunCore(outputDir);
+            Log("Run() completed normally.");
+        }
+        catch (Exception ex)
+        {
+            Log("EXCEPTION: " + ex);
+            throw;
+        }
+        finally
+        {
+            _log?.Dispose();
+        }
+    }
+
+    private static void Log(string message)
+    {
+        _log?.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] {message}");
+    }
+
+    private static void RunCore(string outputDir)
+    {
+        Log($"outputDir = {outputDir}, exists = {Directory.Exists(outputDir)}");
 
         string rootDir = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
@@ -40,24 +73,21 @@ public static class ScreenshotHarness
         var fabricInstance = new Instance { Name = "С модами", McVersion = "1.16.5", Loader = ModLoader.Fabric };
         instanceService.Save(vanillaInstance);
         instanceService.Save(fabricInstance);
+        Log("Sample instances saved.");
 
         string modsDir = instanceService.GetModsDir(fabricInstance);
         File.WriteAllText(Path.Combine(modsDir, "sodium-fabric-0.4.10+1.16.5.jar"), string.Empty);
         File.WriteAllText(Path.Combine(modsDir, "lithium-fabric-mc1.16.5-0.6.4.jar"), string.Empty);
 
-        CaptureWindow(() =>
-        {
-            var window = new MainWindow();
-            return window;
-        }, Path.Combine(outputDir, "01-main.png"));
+        CaptureWindow("MainWindow", () => new MainWindow(), Path.Combine(outputDir, "01-main.png"));
 
-        CaptureWindow(() => new SettingsWindow(settings) { Owner = null },
+        CaptureWindow("SettingsWindow", () => new SettingsWindow(settings),
             Path.Combine(outputDir, "02-settings.png"));
 
-        CaptureWindow(() => new NewInstanceWindow(new MinecraftVersionService(), instanceService),
+        CaptureWindow("NewInstanceWindow", () => new NewInstanceWindow(new MinecraftVersionService(), instanceService),
             Path.Combine(outputDir, "03-new-instance.png"));
 
-        CaptureWindow(() =>
+        CaptureWindow("InstanceSettingsWindow", () =>
         {
             var window = new InstanceSettingsWindow(fabricInstance, instanceService, settings);
             window.Loaded += (_, _) =>
@@ -72,24 +102,37 @@ public static class ScreenshotHarness
             };
             return window;
         }, Path.Combine(outputDir, "04-instance-settings.png"));
+
+        Log($"Files now in outputDir: {string.Join(", ", Directory.GetFiles(outputDir))}");
     }
 
-    private static void CaptureWindow(Func<Window> factory, string outputPath)
+    private static void CaptureWindow(string label, Func<Window> factory, string outputPath)
     {
+        Log($"{label}: constructing...");
         var window = factory();
-        window.WindowStartupLocation = WindowStartupLocation.Manual;
-        window.Left = -10000;
-        window.Top = -10000;
-        window.ShowInTaskbar = false;
+        Log($"{label}: constructed. Showing...");
+
         window.Show();
+        Log($"{label}: Show() returned. IsVisible={window.IsVisible}, ActualWidth={window.ActualWidth}, ActualHeight={window.ActualHeight}");
 
         // Let Loaded fire, entrance animations settle, and any
         // fast-path-completed async continuations resume.
-        PumpFor(TimeSpan.FromMilliseconds(900));
-
+        PumpFor(TimeSpan.FromMilliseconds(1200));
         window.UpdateLayout();
-        Capture(window, outputPath);
+        Log($"{label}: after pump+UpdateLayout. ActualWidth={window.ActualWidth}, ActualHeight={window.ActualHeight}");
+
+        try
+        {
+            Capture(window, outputPath);
+            Log($"{label}: captured to {outputPath}. Exists={File.Exists(outputPath)}, Size={(File.Exists(outputPath) ? new FileInfo(outputPath).Length : -1)}");
+        }
+        catch (Exception ex)
+        {
+            Log($"{label}: CAPTURE FAILED: {ex}");
+        }
+
         window.Close();
+        Log($"{label}: closed.");
 
         // Let the Closed handlers (e.g. main menu music teardown) run.
         PumpFor(TimeSpan.FromMilliseconds(200));
@@ -108,6 +151,7 @@ public static class ScreenshotHarness
 
         using var stream = File.Create(outputPath);
         encoder.Save(stream);
+        stream.Flush();
     }
 
     /// <summary>Runs a nested Dispatcher message loop for a fixed duration — the manual equivalent of Application.Run() while we're not inside one.</summary>

@@ -38,9 +38,9 @@ public sealed class GameLauncher
             ["auth_uuid"] = profile.OfflineUuid.ToString("N"),
             ["auth_access_token"] = "0",
             ["user_type"] = "legacy",
-            ["version_type"] = "hitboxes-launcher",
+            ["version_type"] = "reverfyx-client-launcher",
             ["natives_directory"] = installed.NativesDir,
-            ["launcher_name"] = "hitboxes-launcher",
+            ["launcher_name"] = "reverfyx-client-launcher",
             ["launcher_version"] = "0.1.0",
             ["classpath"] = classpath,
         };

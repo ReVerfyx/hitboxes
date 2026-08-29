@@ -182,7 +182,11 @@ public partial class MainWindow : Window
             var profile = new Profile { Username = username };
             var launcher = new GameLauncher(_rootDir);
             string gameDir = _instanceService.GetGameDir(instance);
-            _instanceService.GetModsDir(instance); // ensure it exists before Fabric Loader scans it
+            if (instance.Loader == ModLoader.Fabric)
+            {
+                string modsDir = _instanceService.GetModsDir(instance);
+                BundledModService.EnsureReVerfyxClientInstalled(modsDir);
+            }
             launcher.Launch(installed, profile, instance, _settings, gameDir);
 
             instance.LastPlayedAt = DateTimeOffset.UtcNow;

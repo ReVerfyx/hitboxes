@@ -7,48 +7,6 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-launcher:
-    name: Launcher (.NET / WPF)
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: "8.0.x"
-
-      - name: Restore
-        run: dotnet restore launcher/Launcher.sln
-
-      - name: Build
-        run: dotnet build launcher/Launcher.sln --configuration Release --no-restore
-
-      - name: Publish
-        run: >
-          dotnet publish launcher/Launcher/Launcher.csproj
-          --configuration Release
-          --output publish
-          --self-contained false
-
-      - name: Upload launcher artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: hitboxes-launcher-windows
-          path: publish/
-          if-no-files-found: error
-
-      - name: Capture UI screenshots
-        run: .\publish\HitboxesLauncher.exe --capture-screenshots "${{ github.workspace }}\screenshots"
-        shell: pwsh
-
-      - name: Upload screenshots
-        uses: actions/upload-artifact@v4
-        with:
-          name: hitboxes-launcher-screenshots
-          path: screenshots/
-          if-no-files-found: error
-
   build-mod:
     name: Mod (Fabric / Gradle)
     runs-on: ubuntu-latest
@@ -74,6 +32,64 @@ jobs:
       - name: Upload mod artifact
         uses: actions/upload-artifact@v4
         with:
-          name: hitboxdebug-mod
+          name: reverfyx-client-mod
           path: mod/build/libs/*.jar
           if-no-files-found: error
+
+  build-launcher:
+    name: Launcher (.NET / WPF)
+    runs-on: windows-latest
+    needs: build-mod
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Restore
+        run: dotnet restore launcher/Launcher.sln
+
+      - name: Build
+        run: dotnet build launcher/Launcher.sln --configuration Release --no-restore
+
+      - name: Publish
+        run: >
+          dotnet publish launcher/Launcher/Launcher.csproj
+          --configuration Release
+          --output publish
+          --self-contained false
+
+      - name: Download mod artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: reverfyx-client-mod
+          path: mod-artifact
+
+      - name: Bundle ReVerfyx Client mod into launcher output
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path publish\bundled-mod | Out-Null
+          Get-ChildItem mod-artifact\*.jar |
+            Where-Object { $_.Name -notlike '*-sources.jar' } |
+            Copy-Item -Destination publish\bundled-mod
+
+      - name: Upload launcher artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: reverfyx-client-launcher-windows
+          path: publish/
+          if-no-files-found: error
+
+      - name: Capture UI screenshots
+        run: .\publish\ReVerfyxClientLauncher.exe --capture-screenshots "${{ github.workspace }}\screenshots"
+        shell: pwsh
+        continue-on-error: true
+
+      - name: Upload screenshots
+        uses: actions/upload-artifact@v4
+        with:
+          name: reverfyx-client-launcher-screenshots
+          path: screenshots/
+          if-no-files-found: warn
