@@ -11,13 +11,22 @@ public static class UiAnimations
     public static void FadeIn(UIElement element, double durationMs = 350, double slideFromY = 12)
     {
         element.Opacity = 0;
-        var transform = new TranslateTransform(0, slideFromY);
-        element.RenderTransform = transform;
 
         var duration = new Duration(TimeSpan.FromMilliseconds(durationMs));
         var ease = new CubicEase { EasingMode = EasingMode.EaseOut };
-
         element.BeginAnimation(UIElement.OpacityProperty, new DoubleAnimation(0, 1, duration) { EasingFunction = ease });
+
+        // Window is backed by a real HWND and doesn't support RenderTransform
+        // ("Transform is not valid for Window") — fade it in place instead
+        // of also sliding it. Everything else (instance cards, etc.) still
+        // gets the slide-up.
+        if (element is Window)
+        {
+            return;
+        }
+
+        var transform = new TranslateTransform(0, slideFromY);
+        element.RenderTransform = transform;
         transform.BeginAnimation(TranslateTransform.YProperty, new DoubleAnimation(slideFromY, 0, duration) { EasingFunction = ease });
     }
 
