@@ -21,6 +21,21 @@ public final class FarmBlueprint {
 		this.steps = steps;
 	}
 
-	public record Step(BlockPos relativePos, Item item) {
+	public static final class Step {
+		private final BlockPos relativePos;
+		private final Item item;
+
+		public Step(BlockPos relativePos, Item item) {
+			this.relativePos = relativePos;
+			this.item = item;
+		}
+
+		public BlockPos relativePos() {
+			return relativePos;
+		}
+
+		public Item item() {
+			return item;
+		}
 	}
 }

@@ -20,6 +20,14 @@ public partial class NewInstanceWindow : Window
         {
             GlassWindowHelper.Enable(this, isDialog: true);
             UiAnimations.FadeIn(this);
+
+            if (App.ScreenshotMode)
+            {
+                VersionComboBox.ItemsSource = ScreenshotHarness.SampleVersions;
+                VersionComboBox.SelectedIndex = 0;
+                return;
+            }
+
             try
             {
                 var versions = await _versionService.GetSupportedReleasesAsync();

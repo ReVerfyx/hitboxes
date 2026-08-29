@@ -2,6 +2,7 @@ package com.local.hitboxdebug.feature;
 
 import com.local.hitboxdebug.HitboxDebugClient;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexFormat;
@@ -10,6 +11,7 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.Box;
+import net.minecraft.util.math.Matrix4f;
 import net.minecraft.util.math.Vec3d;
 
 /**
@@ -26,7 +28,7 @@ public final class HitboxVisualizer {
 			return;
 		}
 
-		var client = context.gameRenderer().getClient();
+		MinecraftClient client = context.gameRenderer().getClient();
 		if (client.player == null || client.world == null) {
 			return;
 		}
@@ -38,7 +40,7 @@ public final class HitboxVisualizer {
 		}
 
 		net.minecraft.client.render.RenderLayer.getLines();
-		var buffer = Tessellator.getInstance().getBuffer();
+		BufferBuilder buffer = Tessellator.getInstance().getBuffer();
 
 		com.mojang.blaze3d.systems.RenderSystem.setShader(net.minecraft.client.render.GameRenderer::getPositionColorShader);
 		com.mojang.blaze3d.systems.RenderSystem.lineWidth(2.0f);
@@ -61,7 +63,7 @@ public final class HitboxVisualizer {
 
 	private void drawBox(BufferBuilder buffer, MatrixStack matrices, Box b,
 			float r, float g, float bCol, float a) {
-		var m = matrices.peek().getPositionMatrix();
+		Matrix4f m = matrices.peek().getPositionMatrix();
 		float[][] corners = {
 				{(float) b.minX, (float) b.minY, (float) b.minZ}, {(float) b.maxX, (float) b.minY, (float) b.minZ},
 				{(float) b.maxX, (float) b.minY, (float) b.minZ}, {(float) b.maxX, (float) b.minY, (float) b.maxZ},

@@ -25,7 +25,7 @@ public enum AppTheme
 public sealed class ThemeService
 {
     private static readonly Duration TransitionDuration = new(TimeSpan.FromMilliseconds(700));
-    private static readonly IEasingFunction Easing = new CubicEase { EasingMode = EasingMode.InOut };
+    private static readonly IEasingFunction Easing = new CubicEase { EasingMode = EasingMode.EaseInOut };
 
     private readonly DispatcherTimer _timer;
     private bool _manualRainOverride;

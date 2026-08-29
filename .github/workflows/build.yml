@@ -38,6 +38,17 @@ jobs:
           path: publish/
           if-no-files-found: error
 
+      - name: Capture UI screenshots
+        run: .\publish\HitboxesLauncher.exe --capture-screenshots "${{ github.workspace }}\screenshots"
+        shell: pwsh
+
+      - name: Upload screenshots
+        uses: actions/upload-artifact@v4
+        with:
+          name: hitboxes-launcher-screenshots
+          path: screenshots/
+          if-no-files-found: error
+
   build-mod:
     name: Mod (Fabric / Gradle)
     runs-on: ubuntu-latest

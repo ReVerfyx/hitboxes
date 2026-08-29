@@ -15,7 +15,7 @@ public static class UiAnimations
         element.RenderTransform = transform;
 
         var duration = new Duration(TimeSpan.FromMilliseconds(durationMs));
-        var ease = new CubicEase { EasingMode = EasingMode.Out };
+        var ease = new CubicEase { EasingMode = EasingMode.EaseOut };
 
         element.BeginAnimation(UIElement.OpacityProperty, new DoubleAnimation(0, 1, duration) { EasingFunction = ease });
         transform.BeginAnimation(TranslateTransform.YProperty, new DoubleAnimation(slideFromY, 0, duration) { EasingFunction = ease });
@@ -37,7 +37,7 @@ public static class UiAnimations
 
     private static void AnimateScale(ScaleTransform transform, double to, Duration duration)
     {
-        var ease = new CubicEase { EasingMode = EasingMode.Out };
+        var ease = new CubicEase { EasingMode = EasingMode.EaseOut };
         transform.BeginAnimation(ScaleTransform.ScaleXProperty, new DoubleAnimation(to, duration) { EasingFunction = ease });
         transform.BeginAnimation(ScaleTransform.ScaleYProperty, new DoubleAnimation(to, duration) { EasingFunction = ease });
     }
