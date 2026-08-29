@@ -1,74 +1,82 @@
 <Window x:Class="Hitboxes.Launcher.SettingsWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Настройки лаунчера" Height="620" Width="460"
+        Title="Настройки" Height="650" Width="560"
         Background="{DynamicResource BackgroundBrush}"
         WindowStartupLocation="CenterOwner" ResizeMode="NoResize">
 
-    <Border Style="{StaticResource GlassCardStyle}" Margin="16">
-        <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="4">
-        <StackPanel Margin="20">
-            <TextBlock Text="Java (по умолчанию для новых сборок)" FontWeight="SemiBold"
-                       Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,4" />
-            <TextBox x:Name="JavaPathBox" Margin="0,0,0,16" />
+    <Border Style="{StaticResource GlassCardStyle}" Margin="14" Padding="2">
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <StackPanel Margin="22">
+                <TextBlock Text="Настройки" FontSize="25" FontWeight="SemiBold"
+                           Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,4" />
+                <TextBlock Text="Параметры лаунчера" FontSize="11"
+                           Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,20" />
 
-            <TextBlock Text="Память, МБ (мин / макс)" FontWeight="SemiBold"
-                       Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,4" />
-            <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
-                <TextBox x:Name="MemMinBox" Width="90" Margin="0,0,8,0" />
-                <TextBox x:Name="MemMaxBox" Width="90" />
+                <Border Background="#14161F" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                        CornerRadius="16" Padding="16" Margin="0,0,0,12">
+                    <StackPanel>
+                        <TextBlock Text="Java и память" FontSize="13" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,14" />
+
+                        <TextBlock Text="Java" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}" />
+                        <TextBox x:Name="JavaPathBox" Margin="0,5,0,14" />
+
+                        <TextBlock Text="Выделенная память" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}" />
+                        <ComboBox x:Name="MemoryBox" Margin="0,5,0,4" />
+                        <TextBlock Text="От 4 ГБ до доступной физической памяти компьютера"
+                                   FontSize="9" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,14" />
+
+                        <TextBlock Text="Дополнительные аргументы JVM" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}" />
+                        <TextBox x:Name="JvmArgsBox" Margin="0,5,0,0" />
+                    </StackPanel>
+                </Border>
+
+                <Border Background="#14161F" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                        CornerRadius="16" Padding="16" Margin="0,0,0,12">
+                    <StackPanel>
+                        <TextBlock Text="Внешний вид" FontSize="13" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,14" />
+                        <TextBlock Text="Цвет стекла" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}" />
+                        <StackPanel Orientation="Horizontal" Margin="0,7,0,10">
+                            <Border Width="30" Height="30" CornerRadius="15" Margin="0,0,8,0" Background="#4FA8FF"
+                                    Cursor="Hand" MouseLeftButtonUp="GlassSwatch_Click" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" />
+                            <Border Width="30" Height="30" CornerRadius="15" Margin="0,0,8,0" Background="#FF6FA8"
+                                    Cursor="Hand" MouseLeftButtonUp="GlassSwatch_Click" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" />
+                            <Border Width="30" Height="30" CornerRadius="15" Margin="0,0,8,0" Background="#7CE0A0"
+                                    Cursor="Hand" MouseLeftButtonUp="GlassSwatch_Click" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" />
+                            <Border Width="30" Height="30" CornerRadius="15" Margin="0,0,8,0" Background="#8B7CFF"
+                                    Cursor="Hand" MouseLeftButtonUp="GlassSwatch_Click" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBox x:Name="GlassHexBox" Width="120" Margin="0,0,8,0" TextChanged="GlassHexBox_TextChanged" />
+                            <Border x:Name="GlassPreview" Width="30" Height="30" CornerRadius="15"
+                                    BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" />
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <Border Background="#14161F" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                        CornerRadius="16" Padding="16" Margin="0,0,0,12">
+                    <StackPanel>
+                        <TextBlock Text="Дополнительно" FontSize="13" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,14" />
+                        <CheckBox x:Name="MusicEnabledBox" Content="Музыка в главном меню"
+                                  Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,10" />
+                        <TextBlock Text="Громкость" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}" />
+                        <Slider x:Name="MusicVolumeSlider" Minimum="0" Maximum="1" Margin="0,3,0,12" />
+                        <CheckBox x:Name="RainAutoDetectBox" Content="Автоопределение дождя"
+                                  Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,10" />
+                        <TextBox x:Name="WeatherApiKeyBox" Margin="0,0,0,7" />
+                        <TextBox x:Name="WeatherCityBox" />
+                    </StackPanel>
+                </Border>
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Content="Отмена" Style="{StaticResource GlassSecondaryButtonStyle}" Margin="0,0,8,0" Click="Cancel_Click" />
+                    <Button Content="Сохранить" Style="{StaticResource GlassButtonStyle}" Click="Save_Click" />
+                </StackPanel>
             </StackPanel>
-
-            <TextBlock Text="Дополнительные аргументы JVM" FontWeight="SemiBold"
-                       Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,4" />
-            <TextBox x:Name="JvmArgsBox" Margin="0,0,0,16" />
-
-            <Separator Margin="0,0,0,16" />
-
-            <TextBlock Text="Цвет стекла" FontWeight="SemiBold"
-                       Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,8" />
-            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                <Border x:Name="GlassSwatch1" Width="32" Height="32" CornerRadius="16" Margin="0,0,8,0"
-                        Background="#4FA8FF" Cursor="Hand" MouseLeftButtonUp="GlassSwatch_Click"
-                        BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" />
-                <Border x:Name="GlassSwatch2" Width="32" Height="32" CornerRadius="16" Margin="0,0,8,0"
-                        Background="#FF6FA8" Cursor="Hand" MouseLeftButtonUp="GlassSwatch_Click"
-                        BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" />
-                <Border x:Name="GlassSwatch3" Width="32" Height="32" CornerRadius="16" Margin="0,0,8,0"
-                        Background="#7CE0A0" Cursor="Hand" MouseLeftButtonUp="GlassSwatch_Click"
-                        BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" />
-                <Border x:Name="GlassSwatch4" Width="32" Height="32" CornerRadius="16" Margin="0,0,8,0"
-                        Background="#B98CFF" Cursor="Hand" MouseLeftButtonUp="GlassSwatch_Click"
-                        BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" />
-                <Border x:Name="GlassSwatch5" Width="32" Height="32" CornerRadius="16"
-                        Background="#FFC966" Cursor="Hand" MouseLeftButtonUp="GlassSwatch_Click"
-                        BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" />
-            </StackPanel>
-            <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
-                <TextBox x:Name="GlassHexBox" Width="120" Margin="0,0,8,0" TextChanged="GlassHexBox_TextChanged" />
-                <Border x:Name="GlassPreview" Width="32" Height="32" CornerRadius="16"
-                        BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" />
-            </StackPanel>
-
-            <Separator Margin="0,0,0,16" />
-
-            <CheckBox x:Name="MusicEnabledBox" Content="Музыка C418 в главном меню"
-                      Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,8" />
-            <TextBlock Text="Громкость музыки" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,4" />
-            <Slider x:Name="MusicVolumeSlider" Minimum="0" Maximum="1" Margin="0,0,0,16" />
-
-            <Separator Margin="0,0,0,16" />
-
-            <CheckBox x:Name="RainAutoDetectBox" Content="Автоопределение дождя по погоде (OpenWeatherMap)"
-                      Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,8" />
-            <TextBox x:Name="WeatherApiKeyBox" Margin="0,0,0,8" Tag="API-ключ OpenWeatherMap" />
-            <TextBox x:Name="WeatherCityBox" Margin="0,0,0,16" />
-
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                <Button Content="Отмена" Style="{StaticResource GlassSecondaryButtonStyle}" Margin="0,0,8,0" Click="Cancel_Click" />
-                <Button Content="Сохранить" Style="{StaticResource GlassButtonStyle}" Click="Save_Click" />
-            </StackPanel>
-        </StackPanel>
         </ScrollViewer>
     </Border>
 </Window>
