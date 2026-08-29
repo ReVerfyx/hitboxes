@@ -13,7 +13,28 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <!-- Glass tint wash over the whole window, subtle, colored by Settings -> glass color. -->
+        <!-- Original, non-Mojang blocky landscape silhouette — sun/clouds up top,
+             a grass-and-dirt strip and a couple of trees along the bottom — so
+             the day/night/rain sky gradient behind it reads as a game world,
+             not just an abstract color wash. Fixed art, not theme-animated. -->
+        <Canvas Grid.Row="0" Grid.RowSpan="4" Margin="-24" IsHitTestVisible="False" Panel.ZIndex="-2" ClipToBounds="True">
+            <Ellipse Canvas.Right="60" Canvas.Top="40" Width="64" Height="64" Fill="#FFF3C64B" Opacity="0.85" />
+            <Rectangle Canvas.Left="120" Canvas.Top="70" Width="70" Height="22" RadiusX="10" RadiusY="10" Fill="#FFFFFFFF" Opacity="0.5" />
+            <Rectangle Canvas.Left="340" Canvas.Top="110" Width="90" Height="26" RadiusX="12" RadiusY="12" Fill="#FFFFFFFF" Opacity="0.4" />
+            <Rectangle Canvas.Left="700" Canvas.Top="55" Width="60" Height="18" RadiusX="8" RadiusY="8" Fill="#FFFFFFFF" Opacity="0.5" />
+
+            <!-- ground -->
+            <Rectangle Canvas.Bottom="52" Canvas.Left="0" Width="1100" Height="52" Fill="#FF6FAE3E" />
+            <Rectangle Canvas.Bottom="0" Canvas.Left="0" Width="1100" Height="52" Fill="#FF7A5230" />
+
+            <!-- trees (trunk + blocky canopy), original geometric shapes -->
+            <Rectangle Canvas.Bottom="52" Canvas.Left="90" Width="14" Height="34" Fill="#FF5B3B22" />
+            <Rectangle Canvas.Bottom="80" Canvas.Left="66" Width="62" Height="46" Fill="#FF3C7A2E" />
+            <Rectangle Canvas.Bottom="52" Canvas.Left="860" Width="14" Height="34" Fill="#FF5B3B22" />
+            <Rectangle Canvas.Bottom="80" Canvas.Left="836" Width="62" Height="46" Fill="#FF3C7A2E" />
+        </Canvas>
+
+        <!-- Accent-color wash over the whole window, colored by Settings -> "Цвет стекла". -->
         <Border Grid.Row="0" Grid.RowSpan="4" Background="{DynamicResource GlassTintBrush}" CornerRadius="20"
                 Margin="-24" IsHitTestVisible="False" Panel.ZIndex="-1" />
 
@@ -24,10 +45,18 @@
             </Grid.ColumnDefinitions>
 
             <StackPanel Grid.Column="0" Orientation="Horizontal">
-                <TextBlock Text="ReVerfyx Client Launcher" FontSize="28" FontWeight="Bold"
-                           Foreground="{DynamicResource TextPrimaryBrush}" />
+                <TextBlock Text="ReVerfyx Client" FontSize="22" FontFamily="{StaticResource PixelFontFamily}"
+                           Foreground="{DynamicResource TextPrimaryBrush}">
+                    <TextBlock.Effect>
+                        <DropShadowEffect Color="Black" Opacity="0.6" BlurRadius="0" ShadowDepth="3" Direction="315" />
+                    </TextBlock.Effect>
+                </TextBlock>
                 <TextBlock x:Name="ThemeLabel" Text="  ·  день" FontSize="16" VerticalAlignment="Bottom"
-                           Margin="8,0,0,4" Foreground="{DynamicResource TextSecondaryBrush}" />
+                           Margin="10,0,0,2" Foreground="{DynamicResource TextPrimaryBrush}">
+                    <TextBlock.Effect>
+                        <DropShadowEffect Color="Black" Opacity="0.5" BlurRadius="4" ShadowDepth="1" Direction="315" />
+                    </TextBlock.Effect>
+                </TextBlock>
             </StackPanel>
 
             <StackPanel Grid.Column="1" Orientation="Horizontal">
@@ -40,7 +69,11 @@
 
         <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,8,0,16">
             <TextBlock Text="Ник (офлайн):" VerticalAlignment="Center"
-                       Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,8,0" />
+                       Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,8,0">
+                <TextBlock.Effect>
+                    <DropShadowEffect Color="Black" Opacity="0.5" BlurRadius="4" ShadowDepth="1" Direction="315" />
+                </TextBlock.Effect>
+            </TextBlock>
             <TextBox x:Name="UsernameBox" Text="Player" Width="180" />
         </StackPanel>
 
@@ -54,14 +87,14 @@
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <Border x:Name="Card" Width="180" Height="130" Margin="8" CornerRadius="14"
-                                    Background="{DynamicResource BackgroundBrush}"
-                                    BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                            <Border x:Name="Card" Width="200" Height="140" Margin="8" CornerRadius="10"
+                                    Background="#E8151A22"
+                                    BorderBrush="{DynamicResource BorderBrush}" BorderThickness="3"
                                     Loaded="InstanceCard_Loaded">
                                 <Border.Effect>
-                                    <DropShadowEffect Color="Black" Opacity="0.15" BlurRadius="12" ShadowDepth="3" Direction="270" />
+                                    <DropShadowEffect Color="Black" Opacity="0.3" BlurRadius="10" ShadowDepth="3" Direction="270" />
                                 </Border.Effect>
-                                <Grid Margin="12">
+                                <Grid Margin="14">
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="*" />
                                         <RowDefinition Height="Auto" />
@@ -72,14 +105,14 @@
                                                TextWrapping="Wrap" Foreground="{DynamicResource TextPrimaryBrush}" />
 
                                     <TextBlock Grid.Row="1" Text="{Binding Subtitle}" FontSize="12"
-                                               Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,4,0,8" />
+                                               Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,4,0,10" />
 
                                     <StackPanel Grid.Row="2" Orientation="Horizontal">
                                         <Button Content="Играть" Style="{StaticResource GlassButtonStyle}" Margin="0,0,4,0"
                                                 Tag="{Binding}" Click="PlayInstance_Click" />
-                                        <Button Content="⚙" Style="{StaticResource GlassSecondaryButtonStyle}" Margin="0,0,4,0"
+                                        <Button Content="⚙" Style="{StaticResource GlassSecondaryButtonStyle}" Padding="9,9" Margin="0,0,4,0"
                                                 Tag="{Binding}" Click="EditInstance_Click" ToolTip="Настройки сборки" />
-                                        <Button Content="✕" Style="{StaticResource GlassSecondaryButtonStyle}"
+                                        <Button Content="✕" Style="{StaticResource GlassSecondaryButtonStyle}" Padding="9,9"
                                                 Tag="{Binding}" Click="DeleteInstance_Click" ToolTip="Удалить" />
                                     </StackPanel>
                                 </Grid>

@@ -33,8 +33,9 @@ public static class ThemeResources
     public static readonly SolidColorBrush AccentHoverBrush = new(ThemePalettes.Day.AccentHover);
     public static readonly SolidColorBrush BorderBrush = new(ThemePalettes.Day.Border);
 
-    /// <summary>User-adjustable glass tint overlay (Settings -> glass color).</summary>
-    public static readonly SolidColorBrush GlassTintBrush = new(Color.FromArgb(0x33, 0x4F, 0xA8, 0xFF));
+    /// <summary>User-adjustable accent-color wash overlay (Settings -> "Цвет стекла"). Kept subtle now that
+    /// panels are opaque HUD-style rather than frosted glass — it's a tint, not the whole look.</summary>
+    public static readonly SolidColorBrush GlassTintBrush = new(Color.FromArgb(0x18, 0x4F, 0xA8, 0xFF));
 
     public static void Register(ResourceDictionary resources)
     {

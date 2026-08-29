@@ -5,12 +5,17 @@
     <Application.Resources>
         <ResourceDictionary>
 
-            <!-- Base glass "card" look, shared by panels, instance tiles and dialogs. -->
+            <!-- "Press Start 2P" (SIL OFL, Google Fonts) — a pixel-style display
+                 font, used sparingly (logo, primary CTA buttons) so body text
+                 stays readable. It has full Cyrillic coverage. -->
+            <FontFamily x:Key="PixelFontFamily">pack://application:,,,/Assets/Fonts/#Press Start 2P</FontFamily>
+
+            <!-- Chunky game-HUD panel, shared by panels, instance tiles and dialogs. -->
             <Style x:Key="GlassCardStyle" TargetType="Border">
                 <Setter Property="Background" Value="{DynamicResource PanelBrush}" />
                 <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
-                <Setter Property="BorderThickness" Value="1" />
-                <Setter Property="CornerRadius" Value="16" />
+                <Setter Property="BorderThickness" Value="3" />
+                <Setter Property="CornerRadius" Value="10" />
                 <Setter Property="RenderTransformOrigin" Value="0.5,0.5" />
                 <Setter Property="RenderTransform">
                     <Setter.Value>
@@ -19,17 +24,22 @@
                 </Setter>
                 <Setter Property="Effect">
                     <Setter.Value>
-                        <DropShadowEffect Color="Black" Opacity="0.18" BlurRadius="18" ShadowDepth="4" Direction="270" />
+                        <DropShadowEffect Color="Black" Opacity="0.35" BlurRadius="14" ShadowDepth="5" Direction="270" />
                     </Setter.Value>
                 </Setter>
             </Style>
 
-            <!-- Flat, rounded, glass-tinted button for primary actions. -->
+            <!-- Chunky, beveled "game button" for primary actions — a solid fill,
+                 a thick bottom shadow edge standing in for a pixel-art bevel, and
+                 a thin light inner stroke as a highlight. Presses flatten the
+                 bevel and nudge the content down, like a pressed 8-bit button. -->
             <Style x:Key="GlassButtonStyle" TargetType="Button">
                 <Setter Property="Background" Value="{DynamicResource AccentBrush}" />
                 <Setter Property="Foreground" Value="White" />
+                <Setter Property="FontFamily" Value="{StaticResource PixelFontFamily}" />
+                <Setter Property="FontSize" Value="10" />
                 <Setter Property="BorderThickness" Value="0" />
-                <Setter Property="Padding" Value="14,8" />
+                <Setter Property="Padding" Value="14,9" />
                 <Setter Property="Cursor" Value="Hand" />
                 <Setter Property="RenderTransformOrigin" Value="0.5,0.5" />
                 <Setter Property="RenderTransform">
@@ -40,9 +50,22 @@
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="Button">
-                            <Border Background="{TemplateBinding Background}" CornerRadius="10" Padding="{TemplateBinding Padding}">
-                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
-                            </Border>
+                            <Grid RenderTransformOrigin="0.5,0.5">
+                                <Grid.RenderTransform>
+                                    <TranslateTransform x:Name="PressTransform" Y="0" />
+                                </Grid.RenderTransform>
+                                <Border x:Name="Bevel" Background="{TemplateBinding Background}" CornerRadius="8"
+                                        BorderBrush="#40000000" BorderThickness="0,0,0,4" />
+                                <Border CornerRadius="8" BorderBrush="#33FFFFFF" BorderThickness="2" Margin="1,1,1,4" />
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                  Margin="{TemplateBinding Padding}" />
+                            </Grid>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsPressed" Value="True">
+                                    <Setter TargetName="Bevel" Property="BorderThickness" Value="0" />
+                                    <Setter TargetName="PressTransform" Property="Y" Value="3" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
                         </ControlTemplate>
                     </Setter.Value>
                 </Setter>
@@ -53,7 +76,6 @@
                                 <Storyboard>
                                     <DoubleAnimation Storyboard.TargetProperty="RenderTransform.ScaleX" To="1.04" Duration="0:0:0.15" />
                                     <DoubleAnimation Storyboard.TargetProperty="RenderTransform.ScaleY" To="1.04" Duration="0:0:0.15" />
-                                    <DoubleAnimation Storyboard.TargetProperty="Opacity" To="0.92" Duration="0:0:0.15" />
                                 </Storyboard>
                             </BeginStoryboard>
                         </Trigger.EnterActions>
@@ -62,7 +84,6 @@
                                 <Storyboard>
                                     <DoubleAnimation Storyboard.TargetProperty="RenderTransform.ScaleX" To="1" Duration="0:0:0.15" />
                                     <DoubleAnimation Storyboard.TargetProperty="RenderTransform.ScaleY" To="1" Duration="0:0:0.15" />
-                                    <DoubleAnimation Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.15" />
                                 </Storyboard>
                             </BeginStoryboard>
                         </Trigger.ExitActions>
@@ -70,25 +91,25 @@
                 </Style.Triggers>
             </Style>
 
-            <!-- Secondary/flat button (Cancel, close, icon buttons). -->
+            <!-- Secondary/flat button (Cancel, close, icon buttons) — same bevel, dark HUD fill. -->
             <Style x:Key="GlassSecondaryButtonStyle" TargetType="Button" BasedOn="{StaticResource GlassButtonStyle}">
-                <Setter Property="Background" Value="{DynamicResource PanelBrush}" />
+                <Setter Property="Background" Value="#3A4048" />
                 <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
             </Style>
 
-            <!-- Rounded, translucent text fields to match the glass aesthetic. -->
+            <!-- Solid HUD-style text fields — no more frosted translucency. -->
             <Style TargetType="TextBox">
-                <Setter Property="Background" Value="{DynamicResource PanelBrush}" />
+                <Setter Property="Background" Value="#22262E" />
                 <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
                 <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
-                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="BorderThickness" Value="2" />
                 <Setter Property="Padding" Value="8" />
                 <Setter Property="CaretBrush" Value="{DynamicResource TextPrimaryBrush}" />
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="TextBox">
                             <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
-                                    BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="8">
+                                    BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="6">
                                 <ScrollViewer x:Name="PART_ContentHost" Margin="{TemplateBinding Padding}" />
                             </Border>
                         </ControlTemplate>
@@ -97,17 +118,17 @@
             </Style>
 
             <Style TargetType="ComboBox">
-                <Setter Property="Background" Value="{DynamicResource PanelBrush}" />
+                <Setter Property="Background" Value="#22262E" />
                 <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
                 <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
                 <Setter Property="Padding" Value="8" />
             </Style>
 
             <Style TargetType="ListBox">
-                <Setter Property="Background" Value="{DynamicResource PanelBrush}" />
+                <Setter Property="Background" Value="#22262E" />
                 <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
                 <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
-                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="BorderThickness" Value="2" />
             </Style>
 
         </ResourceDictionary>
