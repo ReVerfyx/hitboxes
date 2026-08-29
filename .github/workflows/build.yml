@@ -84,7 +84,6 @@ jobs:
 
       - name: Capture UI screenshots
         shell: pwsh
-        continue-on-error: true
         run: |
           # The exe's window-compositing path has turned out to be flaky on
           # this specific CI VM (crash point moves between runs — sometimes
@@ -113,6 +112,10 @@ jobs:
             if ($pngCount -gt 0) {
               break
             }
+          }
+          if ($pngCount -eq 0) {
+            Write-Host "##[error]No screenshots were produced after $maxAttempts attempts — failing so this shows up as a real CI failure instead of silently passing."
+            exit 1
           }
 
       - name: Print harness log
