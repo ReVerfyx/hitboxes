@@ -89,14 +89,14 @@
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <Border x:Name="Card" Width="200" Height="140" Margin="8" CornerRadius="10"
-                                    Background="#E8151A22"
-                                    BorderBrush="{DynamicResource BorderBrush}" BorderThickness="3"
+                            <Border x:Name="Card" Width="200" Height="140" Margin="8" CornerRadius="22"
+                                    Background="#B0151A22"
+                                    BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1.5"
                                     Loaded="InstanceCard_Loaded">
                                 <Border.Effect>
-                                    <DropShadowEffect Color="Black" Opacity="0.3" BlurRadius="10" ShadowDepth="3" Direction="270" />
+                                    <DropShadowEffect Color="Black" Opacity="0.28" BlurRadius="14" ShadowDepth="4" Direction="270" />
                                 </Border.Effect>
-                                <Grid Margin="14">
+                                <Grid Margin="16">
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="*" />
                                         <RowDefinition Height="Auto" />
@@ -112,9 +112,9 @@
                                     <StackPanel Grid.Row="2" Orientation="Horizontal">
                                         <Button Content="Играть" Style="{StaticResource GlassButtonStyle}" Margin="0,0,4,0"
                                                 Tag="{Binding}" Click="PlayInstance_Click" />
-                                        <Button Content="⚙" Style="{StaticResource GlassSecondaryButtonStyle}" Padding="9,9" Margin="0,0,4,0"
+                                        <Button Content="⚙" Style="{StaticResource GlassIconButtonStyle}" Margin="0,0,4,0"
                                                 Tag="{Binding}" Click="EditInstance_Click" ToolTip="Настройки сборки" />
-                                        <Button Content="✕" Style="{StaticResource GlassSecondaryButtonStyle}" Padding="9,9"
+                                        <Button Content="✕" Style="{StaticResource GlassIconButtonStyle}"
                                                 Tag="{Binding}" Click="DeleteInstance_Click" ToolTip="Удалить" />
                                     </StackPanel>
                                 </Grid>
