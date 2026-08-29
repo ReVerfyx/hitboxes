@@ -92,12 +92,22 @@ jobs:
           # writes its own log file — consistent with the runner's graphics
           # stack, not our code). Retry the whole process a few times and
           # keep whichever attempt actually produced PNGs.
+          #
+          # NOTE: plain `& .\exe args` does NOT reliably block until this
+          # particular (non-console, "Windows" subsystem) exe exits — the
+          # previous attempt showed later retries colliding with harness.log
+          # / crash.log still held open by an earlier attempt's process that
+          # was, in fact, still alive. Start-Process -Wait uses a real
+          # WaitForExit() and actually blocks.
           $maxAttempts = 5
           for ($i = 1; $i -le $maxAttempts; $i++) {
             Write-Host "--- capture attempt $i/$maxAttempts ---"
+            Get-Process ReVerfyxClientLauncher -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
             Remove-Item -Path screenshots -Recurse -Force -ErrorAction SilentlyContinue
-            & .\publish\ReVerfyxClientLauncher.exe --capture-screenshots "${{ github.workspace }}\screenshots"
-            Write-Host "exit code: $LASTEXITCODE"
+            $proc = Start-Process -FilePath ".\publish\ReVerfyxClientLauncher.exe" `
+              -ArgumentList "--capture-screenshots", "${{ github.workspace }}\screenshots" `
+              -Wait -PassThru -NoNewWindow
+            Write-Host "exit code: $($proc.ExitCode)"
             $pngCount = (Get-ChildItem -Path screenshots -Filter *.png -ErrorAction SilentlyContinue | Measure-Object).Count
             Write-Host "PNGs produced: $pngCount"
             if ($pngCount -gt 0) {
