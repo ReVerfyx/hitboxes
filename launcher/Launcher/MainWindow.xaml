@@ -18,10 +18,12 @@
              the day/night/rain sky gradient behind it reads as a game world,
              not just an abstract color wash. Fixed art, not theme-animated. -->
         <Canvas Grid.Row="0" Grid.RowSpan="4" Margin="-24" IsHitTestVisible="False" Panel.ZIndex="-2" ClipToBounds="True">
-            <Ellipse Canvas.Right="60" Canvas.Top="40" Width="64" Height="64" Fill="#FFF3C64B" Opacity="0.85" />
-            <Rectangle Canvas.Left="120" Canvas.Top="70" Width="70" Height="22" RadiusX="10" RadiusY="10" Fill="#FFFFFFFF" Opacity="0.5" />
-            <Rectangle Canvas.Left="340" Canvas.Top="110" Width="90" Height="26" RadiusX="12" RadiusY="12" Fill="#FFFFFFFF" Opacity="0.4" />
-            <Rectangle Canvas.Left="700" Canvas.Top="55" Width="60" Height="18" RadiusX="8" RadiusY="8" Fill="#FFFFFFFF" Opacity="0.5" />
+            <!-- Pale gold reads as either a soft sun or a moon, so it doesn't
+                 fight the night/rain palettes despite not being theme-animated. -->
+            <Ellipse Canvas.Right="60" Canvas.Top="34" Width="60" Height="60" Fill="#FFEFE6C6" Opacity="0.8" />
+            <Rectangle Canvas.Left="110" Canvas.Top="46" Width="70" Height="22" RadiusX="10" RadiusY="10" Fill="#FFFFFFFF" Opacity="0.45" />
+            <Rectangle Canvas.Left="430" Canvas.Top="30" Width="90" Height="24" RadiusX="12" RadiusY="12" Fill="#FFFFFFFF" Opacity="0.35" />
+            <Rectangle Canvas.Left="700" Canvas.Top="50" Width="60" Height="18" RadiusX="8" RadiusY="8" Fill="#FFFFFFFF" Opacity="0.45" />
 
             <!-- ground -->
             <Rectangle Canvas.Bottom="52" Canvas.Left="0" Width="1100" Height="52" Fill="#FF6FAE3E" />
