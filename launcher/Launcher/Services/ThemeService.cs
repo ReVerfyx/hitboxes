@@ -111,6 +111,17 @@ public sealed class ThemeService
 
     private static void AnimateColor(Animatable target, System.Windows.DependencyProperty property, Color color, bool animate = true)
     {
+        // Once a shared brush/gradient-stop has actually been used to paint
+        // something during a real render pass, WPF freezes it for the
+        // composition thread — even a plain SetValue throws after that
+        // point. There's nothing to recover here (the brush's last-painted
+        // color stands), so just skip rather than crash the app over a
+        // theme transition.
+        if (target.IsFrozen)
+        {
+            return;
+        }
+
         if (!animate)
         {
             target.SetValue(property, color);
