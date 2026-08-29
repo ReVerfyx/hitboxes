@@ -53,7 +53,7 @@
                             <Grid>
                                 <Border CornerRadius="22" Background="{TemplateBinding Background}" Opacity="0.88" />
                                 <Border CornerRadius="22" BorderBrush="#55FFFFFF" BorderThickness="1.5" />
-                                <Border CornerRadius="20,20,20,20" Margin="3,3,3,0" VerticalAlignment="Top" Height="40%">
+                                <Border CornerRadius="20,20,20,20" Margin="3,3,3,0" VerticalAlignment="Top" Height="16">
                                     <Border.Background>
                                         <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
                                             <GradientStop Color="#50FFFFFF" Offset="0" />
