@@ -5,12 +5,13 @@
         Background="{DynamicResource BackgroundBrush}"
         WindowStartupLocation="CenterOwner" ResizeMode="NoResize">
 
+    <Border Style="{StaticResource GlassCardStyle}" Margin="16">
     <StackPanel Margin="20">
         <TextBlock Text="Название" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,4" />
-        <TextBox x:Name="NameBox" Text="Новая сборка" Padding="8" Margin="0,0,0,16" />
+        <TextBox x:Name="NameBox" Text="Новая сборка" Margin="0,0,0,16" />
 
         <TextBlock Text="Версия Minecraft (1.16.5+)" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,4" />
-        <ComboBox x:Name="VersionComboBox" Padding="8" Margin="0,0,0,16" DisplayMemberPath="Id" />
+        <ComboBox x:Name="VersionComboBox" Margin="0,0,0,16" DisplayMemberPath="Id" />
 
         <TextBlock Text="Загрузчик модов" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,4" />
         <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
@@ -23,9 +24,9 @@
         <TextBlock x:Name="ErrorText" Foreground="#D9534F" Margin="0,0,0,8" TextWrapping="Wrap" />
 
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-            <Button Content="Отмена" Padding="12,6" Margin="0,0,8,0" Click="Cancel_Click" />
-            <Button Content="Создать" Padding="12,6" Background="{DynamicResource AccentBrush}"
-                    Foreground="White" BorderThickness="0" Click="Create_Click" />
+            <Button Content="Отмена" Style="{StaticResource GlassSecondaryButtonStyle}" Margin="0,0,8,0" Click="Cancel_Click" />
+            <Button Content="Создать" Style="{StaticResource GlassButtonStyle}" Click="Create_Click" />
         </StackPanel>
     </StackPanel>
+    </Border>
 </Window>

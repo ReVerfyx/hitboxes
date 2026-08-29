@@ -1,8 +1,10 @@
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 using Hitboxes.Launcher.Models;
 using Hitboxes.Launcher.Services;
+using Hitboxes.Launcher.Theming;
 
 namespace Hitboxes.Launcher;
 
@@ -41,8 +43,13 @@ public partial class MainWindow : Window
             _ => string.Empty
         });
 
+        ThemeService.ApplyGlassTint(ParseGlassColor(_settings.GlassTintColor));
+
         Loaded += async (_, _) =>
         {
+            GlassWindowHelper.Enable(this);
+            UiAnimations.FadeIn(this);
+
             await _themeService.StartAsync();
             RefreshInstances();
 
@@ -53,6 +60,26 @@ public partial class MainWindow : Window
             }
         };
         Closed += (_, _) => _musicService.Dispose();
+    }
+
+    internal static Color ParseGlassColor(string hex)
+    {
+        try
+        {
+            var color = (Color)ColorConverter.ConvertFromString(hex)!;
+            return Color.FromArgb(0x33, color.R, color.G, color.B);
+        }
+        catch
+        {
+            return Color.FromArgb(0x33, 0x4F, 0xA8, 0xFF);
+        }
+    }
+
+    private void InstanceCard_Loaded(object sender, RoutedEventArgs e)
+    {
+        var card = (FrameworkElement)sender;
+        UiAnimations.AttachHoverLift(card);
+        UiAnimations.FadeIn(card, durationMs: 250, slideFromY: 8);
     }
 
     private void RefreshInstances()
@@ -81,6 +108,7 @@ public partial class MainWindow : Window
             _themeService.RainAutoDetectEnabled = _settings.RainAutoDetectEnabled;
             _themeService.WeatherApiKey = _settings.WeatherApiKey;
             _themeService.WeatherCity = _settings.WeatherCity;
+            ThemeService.ApplyGlassTint(ParseGlassColor(_settings.GlassTintColor));
 
             _musicService.Volume = (float)_settings.MainMenuMusicVolume;
             if (_settings.MainMenuMusicEnabled && !_musicService.IsPlaying)

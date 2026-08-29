@@ -1,7 +1,7 @@
 <Window x:Class="Hitboxes.Launcher.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Hitboxes Launcher" Height="620" Width="960"
+        Title="ReVerfyx Client" Height="640" Width="980"
         Background="{DynamicResource BackgroundBrush}"
         WindowStartupLocation="CenterScreen">
 
@@ -13,6 +13,10 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
+        <!-- Glass tint wash over the whole window, subtle, colored by Settings -> glass color. -->
+        <Border Grid.Row="0" Grid.RowSpan="4" Background="{DynamicResource GlassTintBrush}" CornerRadius="20"
+                Margin="-24" IsHitTestVisible="False" Panel.ZIndex="-1" />
+
         <Grid Grid.Row="0" Margin="0,0,0,4">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
@@ -20,17 +24,16 @@
             </Grid.ColumnDefinitions>
 
             <StackPanel Grid.Column="0" Orientation="Horizontal">
-                <TextBlock Text="Hitboxes Launcher" FontSize="28" FontWeight="Bold"
+                <TextBlock Text="ReVerfyx Client" FontSize="28" FontWeight="Bold"
                            Foreground="{DynamicResource TextPrimaryBrush}" />
                 <TextBlock x:Name="ThemeLabel" Text="  ·  день" FontSize="16" VerticalAlignment="Bottom"
                            Margin="8,0,0,4" Foreground="{DynamicResource TextSecondaryBrush}" />
             </StackPanel>
 
             <StackPanel Grid.Column="1" Orientation="Horizontal">
-                <Button x:Name="SettingsButton" Content="Настройки" Padding="12,6" Margin="0,0,8,0"
-                        Click="SettingsButton_Click" />
-                <Button x:Name="NewInstanceButton" Content="Новая сборка" Padding="12,6"
-                        Background="{DynamicResource AccentBrush}" Foreground="White" BorderThickness="0"
+                <Button x:Name="SettingsButton" Content="Настройки" Style="{StaticResource GlassSecondaryButtonStyle}"
+                        Margin="0,0,8,0" Click="SettingsButton_Click" />
+                <Button x:Name="NewInstanceButton" Content="Новая сборка" Style="{StaticResource GlassButtonStyle}"
                         Click="NewInstanceButton_Click" />
             </StackPanel>
         </Grid>
@@ -38,11 +41,10 @@
         <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,8,0,16">
             <TextBlock Text="Ник (офлайн):" VerticalAlignment="Center"
                        Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,8,0" />
-            <TextBox x:Name="UsernameBox" Text="Player" Width="180" Padding="6" />
+            <TextBox x:Name="UsernameBox" Text="Player" Width="180" />
         </StackPanel>
 
-        <Border Grid.Row="2" Background="{DynamicResource PanelBrush}" CornerRadius="12"
-                BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Padding="16">
+        <Border Grid.Row="2" Style="{StaticResource GlassCardStyle}" Padding="16">
             <ScrollViewer VerticalScrollBarVisibility="Auto">
                 <ItemsControl x:Name="InstancesList">
                     <ItemsControl.ItemsPanel>
@@ -52,9 +54,13 @@
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <Border Width="180" Height="130" Margin="8" CornerRadius="10"
+                            <Border x:Name="Card" Width="180" Height="130" Margin="8" CornerRadius="14"
                                     Background="{DynamicResource BackgroundBrush}"
-                                    BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
+                                    BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                                    Loaded="InstanceCard_Loaded">
+                                <Border.Effect>
+                                    <DropShadowEffect Color="Black" Opacity="0.15" BlurRadius="12" ShadowDepth="3" Direction="270" />
+                                </Border.Effect>
                                 <Grid Margin="12">
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="*" />
@@ -69,12 +75,11 @@
                                                Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,4,0,8" />
 
                                     <StackPanel Grid.Row="2" Orientation="Horizontal">
-                                        <Button Content="Играть" Padding="10,4" Margin="0,0,4,0"
-                                                Tag="{Binding}" Click="PlayInstance_Click"
-                                                Background="{DynamicResource AccentBrush}" Foreground="White" BorderThickness="0" />
-                                        <Button Content="⚙" Padding="8,4" Margin="0,0,4,0"
+                                        <Button Content="Играть" Style="{StaticResource GlassButtonStyle}" Margin="0,0,4,0"
+                                                Tag="{Binding}" Click="PlayInstance_Click" />
+                                        <Button Content="⚙" Style="{StaticResource GlassSecondaryButtonStyle}" Margin="0,0,4,0"
                                                 Tag="{Binding}" Click="EditInstance_Click" ToolTip="Настройки сборки" />
-                                        <Button Content="✕" Padding="8,4"
+                                        <Button Content="✕" Style="{StaticResource GlassSecondaryButtonStyle}"
                                                 Tag="{Binding}" Click="DeleteInstance_Click" ToolTip="Удалить" />
                                     </StackPanel>
                                 </Grid>

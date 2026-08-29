@@ -1,6 +1,7 @@
 using System.Windows;
 using Hitboxes.Launcher.Models;
 using Hitboxes.Launcher.Services;
+using Hitboxes.Launcher.Theming;
 
 namespace Hitboxes.Launcher;
 
@@ -17,6 +18,8 @@ public partial class NewInstanceWindow : Window
 
         Loaded += async (_, _) =>
         {
+            GlassWindowHelper.Enable(this, isDialog: true);
+            UiAnimations.FadeIn(this);
             try
             {
                 var versions = await _versionService.GetSupportedReleasesAsync();

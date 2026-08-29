@@ -5,29 +5,30 @@
         Background="{DynamicResource BackgroundBrush}"
         WindowStartupLocation="CenterOwner">
 
+    <Border Style="{StaticResource GlassCardStyle}" Margin="16">
     <Grid Margin="20">
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <TabControl Grid.Row="0">
+        <TabControl Grid.Row="0" Background="Transparent">
             <TabItem Header="Общие">
                 <StackPanel Margin="16">
                     <TextBlock Text="Название" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,4" />
-                    <TextBox x:Name="NameBox" Padding="8" Margin="0,0,0,16" />
+                    <TextBox x:Name="NameBox" Margin="0,0,0,16" />
 
                     <TextBlock Text="Java (пусто = как в общих настройках)" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,4" />
-                    <TextBox x:Name="JavaPathBox" Padding="8" Margin="0,0,0,16" />
+                    <TextBox x:Name="JavaPathBox" Margin="0,0,0,16" />
 
                     <TextBlock Text="Память, МБ (мин / макс, пусто = по умолчанию)" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,4" />
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
-                        <TextBox x:Name="MemMinBox" Width="90" Padding="8" Margin="0,0,8,0" />
-                        <TextBox x:Name="MemMaxBox" Width="90" Padding="8" />
+                        <TextBox x:Name="MemMinBox" Width="90" Margin="0,0,8,0" />
+                        <TextBox x:Name="MemMaxBox" Width="90" />
                     </StackPanel>
 
                     <TextBlock Text="Дополнительные аргументы JVM" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,4" />
-                    <TextBox x:Name="JvmArgsBox" Padding="8" />
+                    <TextBox x:Name="JvmArgsBox" />
                 </StackPanel>
             </TabItem>
 
@@ -41,14 +42,14 @@
                     </Grid.RowDefinitions>
 
                     <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,8">
-                        <TextBox x:Name="ModSearchBox" Width="300" Padding="6" Margin="0,0,8,0" />
-                        <Button Content="Искать" Padding="10,4" Click="SearchMods_Click" />
+                        <TextBox x:Name="ModSearchBox" Width="300" Margin="0,0,8,0" />
+                        <Button Content="Искать" Style="{StaticResource GlassSecondaryButtonStyle}" Click="SearchMods_Click" />
                     </StackPanel>
 
                     <ListBox x:Name="SearchResultsList" Grid.Row="1" Height="180" DisplayMemberPath="Title" />
-                    <Button Grid.Row="1" Content="Установить выбранный"
+                    <Button Grid.Row="1" Content="Установить выбранный" Style="{StaticResource GlassButtonStyle}"
                             HorizontalAlignment="Right" VerticalAlignment="Bottom"
-                            Padding="10,4" Margin="0,0,0,4" Click="InstallMod_Click" />
+                            Margin="0,0,0,4" Click="InstallMod_Click" />
 
                     <TextBlock Grid.Row="2" Text="Установленные моды" FontWeight="SemiBold"
                                Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,12,0,8" />
@@ -60,9 +61,9 @@
         <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,12,0,0">
             <TextBlock x:Name="StatusText" VerticalAlignment="Center" Margin="0,0,12,0"
                        Foreground="{DynamicResource TextSecondaryBrush}" />
-            <Button Content="Отмена" Padding="12,6" Margin="0,0,8,0" Click="Cancel_Click" />
-            <Button Content="Сохранить" Padding="12,6" Background="{DynamicResource AccentBrush}"
-                    Foreground="White" BorderThickness="0" Click="Save_Click" />
+            <Button Content="Отмена" Style="{StaticResource GlassSecondaryButtonStyle}" Margin="0,0,8,0" Click="Cancel_Click" />
+            <Button Content="Сохранить" Style="{StaticResource GlassButtonStyle}" Click="Save_Click" />
         </StackPanel>
     </Grid>
+    </Border>
 </Window>

@@ -2,6 +2,7 @@ using System.IO;
 using System.Windows;
 using Hitboxes.Launcher.Models;
 using Hitboxes.Launcher.Services;
+using Hitboxes.Launcher.Theming;
 
 namespace Hitboxes.Launcher;
 
@@ -30,6 +31,12 @@ public partial class InstanceSettingsWindow : Window
         }
 
         RefreshInstalledMods();
+
+        Loaded += (_, _) =>
+        {
+            GlassWindowHelper.Enable(this, isDialog: true);
+            UiAnimations.FadeIn(this);
+        };
     }
 
     private void RefreshInstalledMods()

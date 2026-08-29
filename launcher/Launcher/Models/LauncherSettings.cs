@@ -18,4 +18,7 @@ public sealed class LauncherSettings
     public bool RainAutoDetectEnabled { get; set; } = false;
     public string? WeatherApiKey { get; set; }
     public string WeatherCity { get; set; } = "Moscow";
+
+    /// <summary>Glass overlay tint, as "#RRGGBB". Alpha is applied separately so the glass stays translucent.</summary>
+    public string GlassTintColor { get; set; } = "#4FA8FF";
 }
