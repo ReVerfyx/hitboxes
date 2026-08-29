@@ -50,9 +50,9 @@
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="Button">
-                            <Grid RenderTransformOrigin="0.5,0.5">
+                            <Grid x:Name="Root" RenderTransformOrigin="0.5,0.5">
                                 <Grid.RenderTransform>
-                                    <TranslateTransform x:Name="PressTransform" Y="0" />
+                                    <TranslateTransform Y="0" />
                                 </Grid.RenderTransform>
                                 <Border x:Name="Bevel" Background="{TemplateBinding Background}" CornerRadius="8"
                                         BorderBrush="#40000000" BorderThickness="0,0,0,4" />
@@ -60,10 +60,29 @@
                                 <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
                                                   Margin="{TemplateBinding Padding}" />
                             </Grid>
+                            <!-- TargetName can only address a FrameworkElement, not a Transform directly
+                                 (that's the "Cannot find the Trigger target" build error this replaced) —
+                                 animate the named Grid's RenderTransform.Y sub-property via a Storyboard
+                                 instead, the same pattern already used for hover scale below. -->
                             <ControlTemplate.Triggers>
                                 <Trigger Property="IsPressed" Value="True">
                                     <Setter TargetName="Bevel" Property="BorderThickness" Value="0" />
-                                    <Setter TargetName="PressTransform" Property="Y" Value="3" />
+                                    <Trigger.EnterActions>
+                                        <BeginStoryboard>
+                                            <Storyboard>
+                                                <DoubleAnimation Storyboard.TargetName="Root" Storyboard.TargetProperty="RenderTransform.Y"
+                                                                 To="3" Duration="0:0:0.05" />
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </Trigger.EnterActions>
+                                    <Trigger.ExitActions>
+                                        <BeginStoryboard>
+                                            <Storyboard>
+                                                <DoubleAnimation Storyboard.TargetName="Root" Storyboard.TargetProperty="RenderTransform.Y"
+                                                                 To="0" Duration="0:0:0.05" />
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </Trigger.ExitActions>
                                 </Trigger>
                             </ControlTemplate.Triggers>
                         </ControlTemplate>
