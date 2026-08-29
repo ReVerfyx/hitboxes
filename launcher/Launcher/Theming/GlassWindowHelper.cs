@@ -33,21 +33,43 @@ public static class GlassWindowHelper
     /// </summary>
     public static void Enable(Window window, bool isDialog = false)
     {
-        // Window.Background stays whatever the theme's (semi-transparent)
-        // gradient brush is — see ThemePalette. WPF composites it against
-        // the DWM backdrop set below per-pixel, so the theme tint and the
-        // blur show through together instead of one replacing the other.
-        IntPtr hwnd = new WindowInteropHelper(window).EnsureHandle();
-        if (hwnd == IntPtr.Zero)
+        // The CI screenshot harness renders windows via RenderTargetBitmap,
+        // which only ever captures WPF's own drawn content — the real DWM
+        // backdrop set below never shows up in that output anyway (there's
+        // nothing behind an off-the-record capture for it to blur). Skip
+        // the P/Invoke call entirely there: on at least one CI image it
+        // reliably killed the process with no managed exception at all
+        // (not even AppDimain/DispatcherUnhandledException fired), which
+        // points at a native-level fault rather than anything catchable.
+        if (App.ScreenshotMode)
         {
             return;
         }
 
-        int corner = DWMWCP_ROUND;
-        DwmSetWindowAttribute(hwnd, DWMWA_WINDOW_CORNER_PREFERENCE, ref corner, sizeof(int));
+        try
+        {
+            // Window.Background stays whatever the theme's (semi-transparent)
+            // gradient brush is — see ThemePalette. WPF composites it against
+            // the DWM backdrop set below per-pixel, so the theme tint and the
+            // blur show through together instead of one replacing the other.
+            IntPtr hwnd = new WindowInteropHelper(window).EnsureHandle();
+            if (hwnd == IntPtr.Zero)
+            {
+                return;
+            }
 
-        int backdrop = isDialog ? DWMSBT_TRANSIENTWINDOW : DWMSBT_MAINWINDOW;
-        DwmSetWindowAttribute(hwnd, DWMWA_SYSTEMBACKDROP_TYPE, ref backdrop, sizeof(int));
+            int corner = DWMWCP_ROUND;
+            DwmSetWindowAttribute(hwnd, DWMWA_WINDOW_CORNER_PREFERENCE, ref corner, sizeof(int));
+
+            int backdrop = isDialog ? DWMSBT_TRANSIENTWINDOW : DWMSBT_MAINWINDOW;
+            DwmSetWindowAttribute(hwnd, DWMWA_SYSTEMBACKDROP_TYPE, ref backdrop, sizeof(int));
+        }
+        catch
+        {
+            // Best-effort visual flourish only — never worth taking the
+            // window down over, on whatever Windows version/config this
+            // turns out not to like.
+        }
     }
 
     public static void SetDarkTitleBar(Window window, bool dark)
