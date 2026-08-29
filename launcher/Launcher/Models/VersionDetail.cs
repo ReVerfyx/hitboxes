@@ -46,7 +46,7 @@ public sealed class DownloadsSection
     public DownloadArtifact Client { get; set; } = new();
 }
 
-public sealed class DownloadArtifact
+public class DownloadArtifact
 {
     [JsonPropertyName("url")]
     public string Url { get; set; } = string.Empty;

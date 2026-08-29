@@ -1,8 +1,8 @@
 {
-  "key.hitboxdebug.open_panel": "Open Debug Panel",
-  "category.hitboxdebug": "Hitbox Debug Panel",
+  "key.hitboxdebug.open_panel": "Open Hitboxes Client Panel",
+  "category.hitboxdebug": "Hitboxes Client",
 
-  "hitboxdebug.panel.title": "Debug Panel — Singleplayer / Local World Only",
+  "hitboxdebug.panel.title": "Hitboxes Client — Singleplayer / Local World Only",
   "hitboxdebug.panel.warning": "These tools automate gameplay. They disable themselves whenever another real player is nearby.",
   "hitboxdebug.panel.autofarm_mobs": "Auto-farm mobs (animals only)",
   "hitboxdebug.panel.hitbox_visualizer": "Show mob hitboxes",
