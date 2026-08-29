@@ -1,0 +1,13 @@
+# .NET / WPF
+launcher/**/bin/
+launcher/**/obj/
+
+# Gradle / Fabric Loom
+mod/.gradle/
+mod/build/
+mod/*.iml
+mod/.idea/
+
+# OS
+.DS_Store
+Thumbs.db
