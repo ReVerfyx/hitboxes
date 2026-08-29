@@ -79,15 +79,15 @@ public static class ScreenshotHarness
         File.WriteAllText(Path.Combine(modsDir, "sodium-fabric-0.4.10+1.16.5.jar"), string.Empty);
         File.WriteAllText(Path.Combine(modsDir, "lithium-fabric-mc1.16.5-0.6.4.jar"), string.Empty);
 
-        CaptureWindow("MainWindow", () => new MainWindow(), Path.Combine(outputDir, "01-main.png"));
+        TryCaptureWindow("MainWindow", () => new MainWindow(), Path.Combine(outputDir, "01-main.png"));
 
-        CaptureWindow("SettingsWindow", () => new SettingsWindow(settings),
+        TryCaptureWindow("SettingsWindow", () => new SettingsWindow(settings),
             Path.Combine(outputDir, "02-settings.png"));
 
-        CaptureWindow("NewInstanceWindow", () => new NewInstanceWindow(new MinecraftVersionService(), instanceService),
+        TryCaptureWindow("NewInstanceWindow", () => new NewInstanceWindow(new MinecraftVersionService(), instanceService),
             Path.Combine(outputDir, "03-new-instance.png"));
 
-        CaptureWindow("InstanceSettingsWindow", () =>
+        TryCaptureWindow("InstanceSettingsWindow", () =>
         {
             var window = new InstanceSettingsWindow(fabricInstance, instanceService, settings);
             window.Loaded += (_, _) =>
@@ -104,6 +104,19 @@ public static class ScreenshotHarness
         }, Path.Combine(outputDir, "04-instance-settings.png"));
 
         Log($"Files now in outputDir: {string.Join(", ", Directory.GetFiles(outputDir))}");
+    }
+
+    /// <summary>Isolates one window's capture so a fatal failure on it doesn't stop the rest from being attempted.</summary>
+    private static void TryCaptureWindow(string label, Func<Window> factory, string outputPath)
+    {
+        try
+        {
+            CaptureWindow(label, factory, outputPath);
+        }
+        catch (Exception ex)
+        {
+            Log($"{label}: TOP-LEVEL FAILURE: {ex}");
+        }
     }
 
     private static void CaptureWindow(string label, Func<Window> factory, string outputPath)

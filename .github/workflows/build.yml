@@ -95,6 +95,8 @@ jobs:
           Get-ChildItem -Path screenshots -ErrorAction SilentlyContinue | Format-Table Name, Length
           Write-Host "--- harness.log ---"
           Get-Content -Path screenshots\harness.log -ErrorAction SilentlyContinue
+          Write-Host "--- crash.log ---"
+          Get-Content -Path screenshots\crash.log -ErrorAction SilentlyContinue
 
       - name: Upload screenshots
         uses: actions/upload-artifact@v4

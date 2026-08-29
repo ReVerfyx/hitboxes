@@ -29,7 +29,29 @@ public partial class App : Application
         if (captureIndex >= 0 && captureIndex + 1 < e.Args.Length)
         {
             ScreenshotMode = true;
-            ScreenshotHarness.Run(e.Args[captureIndex + 1]);
+            string outputDir = e.Args[captureIndex + 1];
+
+            // The previous CI attempt's harness.log stopped mid-construction
+            // of the first window with no exception logged at all — pointing
+            // at something that crashes past normal try/catch. Wire up every
+            // "last resort" exception hook so whatever it is gets written to
+            // disk instead of vanishing, and mark Dispatcher exceptions
+            // handled so a single bad window doesn't take the whole process
+            // down before later windows get a chance.
+            System.IO.Directory.CreateDirectory(outputDir);
+            string crashLogPath = System.IO.Path.Combine(outputDir, "crash.log");
+            void LogCrash(string source, object? content) =>
+                System.IO.File.AppendAllText(crashLogPath, $"[{DateTime.Now:HH:mm:ss.fff}] {source}\n{content}\n\n");
+
+            AppDomain.CurrentDomain.UnhandledException += (_, args) =>
+                LogCrash($"AppDomain.UnhandledException (IsTerminating={args.IsTerminating})", args.ExceptionObject);
+            DispatcherUnhandledException += (_, args) =>
+            {
+                LogCrash("Application.DispatcherUnhandledException", args.Exception);
+                args.Handled = true;
+            };
+
+            ScreenshotHarness.Run(outputDir);
             Shutdown();
             return;
         }
