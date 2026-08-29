@@ -131,13 +131,22 @@ public static class ScreenshotHarness
         Log($"{label}: Show() returned. IsVisible={window.IsVisible}, ActualWidth={window.ActualWidth}, ActualHeight={window.ActualHeight}");
 
         // Let Loaded fire, entrance animations settle, and any
-        // fast-path-completed async continuations resume.
-        PumpFor(TimeSpan.FromMilliseconds(1200));
+        // fast-path-completed async continuations resume. Pumped in short
+        // slices with a log line between each so a hang/crash inside the
+        // pump itself is visible (vs. one that only shows up afterward).
+        for (int i = 0; i < 6; i++)
+        {
+            PumpFor(TimeSpan.FromMilliseconds(200));
+            Log($"{label}: pump slice {i + 1}/6 done.");
+        }
+
+        Log($"{label}: calling UpdateLayout()...");
         window.UpdateLayout();
         Log($"{label}: after pump+UpdateLayout. ActualWidth={window.ActualWidth}, ActualHeight={window.ActualHeight}");
 
         try
         {
+            Log($"{label}: calling Capture()...");
             Capture(window, outputPath);
             Log($"{label}: captured to {outputPath}. Exists={File.Exists(outputPath)}, Size={(File.Exists(outputPath) ? new FileInfo(outputPath).Length : -1)}");
         }
@@ -146,6 +155,7 @@ public static class ScreenshotHarness
             Log($"{label}: CAPTURE FAILED: {ex}");
         }
 
+        Log($"{label}: calling Close()...");
         window.Close();
         Log($"{label}: closed.");
 
