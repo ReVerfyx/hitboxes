@@ -83,9 +83,27 @@ jobs:
           if-no-files-found: error
 
       - name: Capture UI screenshots
-        run: .\publish\ReVerfyxClientLauncher.exe --capture-screenshots "${{ github.workspace }}\screenshots"
         shell: pwsh
         continue-on-error: true
+        run: |
+          # The exe's window-compositing path has turned out to be flaky on
+          # this specific CI VM (crash point moves between runs — sometimes
+          # after fully rendering the first window, sometimes before it even
+          # writes its own log file — consistent with the runner's graphics
+          # stack, not our code). Retry the whole process a few times and
+          # keep whichever attempt actually produced PNGs.
+          $maxAttempts = 5
+          for ($i = 1; $i -le $maxAttempts; $i++) {
+            Write-Host "--- capture attempt $i/$maxAttempts ---"
+            Remove-Item -Path screenshots -Recurse -Force -ErrorAction SilentlyContinue
+            & .\publish\ReVerfyxClientLauncher.exe --capture-screenshots "${{ github.workspace }}\screenshots"
+            Write-Host "exit code: $LASTEXITCODE"
+            $pngCount = (Get-ChildItem -Path screenshots -Filter *.png -ErrorAction SilentlyContinue | Measure-Object).Count
+            Write-Host "PNGs produced: $pngCount"
+            if ($pngCount -gt 0) {
+              break
+            }
+          }
 
       - name: Print harness log
         if: always()
