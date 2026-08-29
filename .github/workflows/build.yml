@@ -135,24 +135,3 @@ jobs:
           name: reverfyx-client-launcher-screenshots
           path: screenshots/
           if-no-files-found: warn
-
-      - name: Print PNGs as base64 (artifact zip isn't fetchable from outside Actions)
-        if: always()
-        shell: pwsh
-        run: |
-          # Actions' log ingestion appears to silently drop output from a
-          # tight loop of many thousands of tiny Write-Host calls (one line
-          # per 120 chars = ~1000+ lines per image, ~4000+ total, all
-          # written near-instantly) — several recent runs completed "green"
-          # but the step's actual stdout never showed up when fetched back.
-          # Use much larger chunks so the whole dump is a few dozen lines,
-          # comfortably under whatever the per-second line-rate limit is.
-          Get-ChildItem -Path screenshots -Filter *.png -ErrorAction SilentlyContinue | ForEach-Object {
-            Write-Host "=====BEGIN-PNG-BASE64 $($_.Name)====="
-            $b64 = [Convert]::ToBase64String([IO.File]::ReadAllBytes($_.FullName))
-            for ($i = 0; $i -lt $b64.Length; $i += 4000) {
-              Write-Host $b64.Substring($i, [Math]::Min(4000, $b64.Length - $i))
-              Start-Sleep -Milliseconds 50
-            }
-            Write-Host "=====END-PNG-BASE64 $($_.Name)====="
-          }
