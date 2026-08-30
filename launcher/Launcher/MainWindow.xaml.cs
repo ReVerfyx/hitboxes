@@ -22,6 +22,7 @@ public partial class MainWindow : Window
     private readonly MainMenuMusicService _musicService;
 
     private LauncherSettings _settings;
+    private InstanceViewModel? _selectedInstance;
 
     public MainWindow()
     {
@@ -36,13 +37,6 @@ public partial class MainWindow : Window
         _themeService.RainAutoDetectEnabled = _settings.RainAutoDetectEnabled;
         _themeService.WeatherApiKey = _settings.WeatherApiKey;
         _themeService.WeatherCity = _settings.WeatherCity;
-        _themeService.ThemeChanged += (_, theme) => Dispatcher.Invoke(() => ThemeLabel.Text = theme switch
-        {
-            AppTheme.Day => "  ·  день",
-            AppTheme.Night => "  ·  ночь",
-            AppTheme.Rain => "  ·  дождь",
-            _ => string.Empty
-        });
 
         ThemeService.ApplyGlassTint(ParseGlassColor(_settings.GlassTintColor));
 
@@ -103,8 +97,66 @@ public partial class MainWindow : Window
 
     private void RefreshInstances()
     {
-        var instances = _instanceService.LoadAll().Select(i => new InstanceViewModel(i)).ToList();
+        var instances = _instanceService.LoadAll()
+            .Select(i => new InstanceViewModel(i))
+            .OrderByDescending(vm => vm.Instance.LastPlayedAt ?? DateTimeOffset.MinValue)
+            .ToList();
         InstancesList.ItemsSource = instances;
+
+        if (_selectedInstance is null || instances.All(vm => vm.Instance.Id != _selectedInstance.Instance.Id))
+        {
+            _selectedInstance = instances.FirstOrDefault();
+        }
+        UpdateHomeHero();
+    }
+
+    private void UpdateHomeHero()
+    {
+        bool hasSelection = _selectedInstance is not null;
+        PlaySelectedButton.IsEnabled = hasSelection;
+        EditSelectedButton.IsEnabled = hasSelection;
+
+        if (_selectedInstance is null)
+        {
+            SelectedName.Text = "Нет сборок";
+            SelectedSubtitle.Text = "Нажмите «Создать сборку», чтобы начать";
+            LoaderLabel.Text = "—";
+        }
+        else
+        {
+            SelectedName.Text = _selectedInstance.Name;
+            SelectedSubtitle.Text = $"Minecraft {_selectedInstance.Subtitle}";
+            LoaderLabel.Text = _selectedInstance.Instance.Loader == ModLoader.Fabric ? "Fabric" : "Vanilla";
+        }
+
+        RamLabel.Text = $"{Math.Max(1, _settings.DefaultMemoryMaxMb / 1024)} ГБ";
+        AccountLabel.Text = string.IsNullOrWhiteSpace(UsernameBox.Text) ? "Player" : UsernameBox.Text.Trim();
+    }
+
+    private void ShowView(UIElement view)
+    {
+        HomeView.Visibility = ReferenceEquals(view, HomeView) ? Visibility.Visible : Visibility.Collapsed;
+        InstancesView.Visibility = ReferenceEquals(view, InstancesView) ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    private void HomeButton_Click(object sender, RoutedEventArgs e)
+    {
+        PageTitle.Text = "Главная";
+        PageSubtitle.Text = "Выбранная сборка";
+        UpdateHomeHero();
+        ShowView(HomeView);
+    }
+
+    private void InstancesButton_Click(object sender, RoutedEventArgs e)
+    {
+        PageTitle.Text = "Сборки";
+        PageSubtitle.Text = "Управление установленными сборками";
+        ShowView(InstancesView);
+    }
+
+    private void UsernameBox_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        AccountLabel.Text = string.IsNullOrWhiteSpace(UsernameBox.Text) ? "Player" : UsernameBox.Text.Trim();
     }
 
     private void NewInstanceButton_Click(object sender, RoutedEventArgs e)
@@ -112,7 +164,12 @@ public partial class MainWindow : Window
         var dialog = new NewInstanceWindow(_versionService, _instanceService) { Owner = this };
         if (dialog.ShowDialog() == true)
         {
+            if (dialog.CreatedInstance is { } created)
+            {
+                _selectedInstance = new InstanceViewModel(created);
+            }
             RefreshInstances();
+            HomeButton_Click(sender, e);
         }
     }
 
@@ -138,12 +195,27 @@ public partial class MainWindow : Window
             {
                 _musicService.Stop();
             }
+
+            UpdateHomeHero();
         }
     }
 
     private void EditInstance_Click(object sender, RoutedEventArgs e)
     {
         var vm = (InstanceViewModel)((FrameworkElement)sender).Tag;
+        EditInstance(vm);
+    }
+
+    private void EditSelected_Click(object sender, RoutedEventArgs e)
+    {
+        if (_selectedInstance is not null)
+        {
+            EditInstance(_selectedInstance);
+        }
+    }
+
+    private void EditInstance(InstanceViewModel vm)
+    {
         var dialog = new InstanceSettingsWindow(vm.Instance, _instanceService, _settings) { Owner = this };
         if (dialog.ShowDialog() == true)
         {
@@ -159,13 +231,30 @@ public partial class MainWindow : Window
         if (result == MessageBoxResult.Yes)
         {
             _instanceService.Delete(vm.Instance);
+            if (_selectedInstance?.Instance.Id == vm.Instance.Id)
+            {
+                _selectedInstance = null;
+            }
             RefreshInstances();
         }
     }
 
-    private async void PlayInstance_Click(object sender, RoutedEventArgs e)
+    private void PlayInstance_Click(object sender, RoutedEventArgs e)
     {
         var vm = (InstanceViewModel)((FrameworkElement)sender).Tag;
+        _ = LaunchInstanceAsync(vm, (Button)sender);
+    }
+
+    private void PlaySelected_Click(object sender, RoutedEventArgs e)
+    {
+        if (_selectedInstance is not null)
+        {
+            _ = LaunchInstanceAsync(_selectedInstance, (Button)sender);
+        }
+    }
+
+    private async Task LaunchInstanceAsync(InstanceViewModel vm, Button triggerButton)
+    {
         string username = UsernameBox.Text.Trim();
         if (!AuthService.IsValidUsername(username))
         {
@@ -173,7 +262,7 @@ public partial class MainWindow : Window
             return;
         }
 
-        ((Button)sender).IsEnabled = false;
+        triggerButton.IsEnabled = false;
         var progress = new Progress<string>(msg => StatusText.Text = msg);
 
         try
@@ -211,6 +300,7 @@ public partial class MainWindow : Window
             _instanceService.Save(instance);
 
             StatusText.Text = $"Запущено: {instance.Name} ({launchDetail.Id}) как {username}.";
+            RefreshInstances();
         }
         catch (Exception ex)
         {
@@ -218,7 +308,7 @@ public partial class MainWindow : Window
         }
         finally
         {
-            ((Button)sender).IsEnabled = true;
+            triggerButton.IsEnabled = true;
         }
     }
 }

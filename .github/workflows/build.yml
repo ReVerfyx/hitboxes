@@ -67,6 +67,54 @@ jobs:
           Get-ChildItem mod-artifact\*.jar |
             Where-Object { $_.Name -notlike '*-sources.jar' } |
             Copy-Item -Destination publish\bundled-mod
+
+      - name: Capture UI screenshots
+        shell: pwsh
+        run: |
+          # The exe's window-compositing path has turned out to be flaky on
+          # this specific CI VM (crash point moves between runs). Retry the
+          # whole process a few times and keep whichever attempt actually
+          # produced PNGs. Start-Process -Wait blocks until this
+          # non-console ("Windows" subsystem) exe really exits — plain
+          # `& .\exe args` does not reliably do that.
+          $maxAttempts = 5
+          for ($i = 1; $i -le $maxAttempts; $i++) {
+            Write-Host "--- capture attempt $i/$maxAttempts ---"
+            Get-Process ReVerfyxClientLauncher -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+            Remove-Item -Path screenshots -Recurse -Force -ErrorAction SilentlyContinue
+            $proc = Start-Process -FilePath ".\publish\ReVerfyxClientLauncher.exe" `
+              -ArgumentList "--capture-screenshots", "${{ github.workspace }}\screenshots" `
+              -Wait -PassThru -NoNewWindow
+            Write-Host "exit code: $($proc.ExitCode)"
+            $pngCount = (Get-ChildItem -Path screenshots -Filter *.png -ErrorAction SilentlyContinue | Measure-Object).Count
+            Write-Host "PNGs produced: $pngCount"
+            if ($pngCount -gt 0) {
+              break
+            }
+          }
+          if ($pngCount -eq 0) {
+            Write-Host "##[error]No screenshots were produced after $maxAttempts attempts — failing so this shows up as a real CI failure instead of silently passing."
+            exit 1
+          }
+
+      - name: Print harness log
+        if: always()
+        shell: pwsh
+        run: |
+          Write-Host "--- screenshots dir listing ---"
+          Get-ChildItem -Path screenshots -ErrorAction SilentlyContinue | Format-Table Name, Length
+          Write-Host "--- harness.log ---"
+          Get-Content -Path screenshots\harness.log -ErrorAction SilentlyContinue
+          Write-Host "--- crash.log ---"
+          Get-Content -Path screenshots\crash.log -ErrorAction SilentlyContinue
+
+      - name: Upload screenshots
+        uses: actions/upload-artifact@v4
+        with:
+          name: reverfyx-client-launcher-screenshots
+          path: screenshots/
+          if-no-files-found: warn
+
       - name: Upload ready-to-run EXE
         uses: actions/upload-artifact@v4
         with:
@@ -79,3 +127,17 @@ jobs:
           name: ReVerfyx-Launcher-Bundle-Windows-x64
           path: publish/
           if-no-files-found: error
+
+      - name: Print PNGs as base64 (artifact zip isn't fetchable from outside Actions; temporary, for retrieval)
+        if: always()
+        shell: pwsh
+        run: |
+          Get-ChildItem -Path screenshots -Filter *.png -ErrorAction SilentlyContinue | ForEach-Object {
+            Write-Host "=====BEGIN-PNG-BASE64 $($_.Name)====="
+            $b64 = [Convert]::ToBase64String([IO.File]::ReadAllBytes($_.FullName))
+            for ($i = 0; $i -lt $b64.Length; $i += 4000) {
+              Write-Host $b64.Substring($i, [Math]::Min(4000, $b64.Length - $i))
+              Start-Sleep -Milliseconds 50
+            }
+            Write-Host "=====END-PNG-BASE64 $($_.Name)====="
+          }

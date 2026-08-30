@@ -10,6 +10,8 @@ public partial class NewInstanceWindow : Window
     private readonly MinecraftVersionService _versionService;
     private readonly InstanceService _instanceService;
 
+    public Instance? CreatedInstance { get; private set; }
+
     public NewInstanceWindow(MinecraftVersionService versionService, InstanceService instanceService)
     {
         ThemeResources.Register(Resources);
@@ -63,6 +65,7 @@ public partial class NewInstanceWindow : Window
         };
 
         _instanceService.Save(instance);
+        CreatedInstance = instance;
         DialogResult = true;
     }
 
