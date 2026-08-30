@@ -31,6 +31,13 @@ jobs:
         with:
           distribution: temurin
           java-version: ${{ matrix.java_version }}
+      - name: TEMP - print real fabric-api/fabric-loader versions (another open range may have picked something odd)
+        if: matrix.mc_version == '1.21.4'
+        run: |
+          echo "--- fabric-api versions matching +1.21.4 ---"
+          curl -sS "https://maven.fabricmc.net/net/fabricmc/fabric-api/fabric-api/maven-metadata.xml" | grep -o '<version>[^<]*+1\.21\.4[^<]*</version>' | tail -30
+          echo "--- fabric-loader latest/release ---"
+          curl -sS "https://maven.fabricmc.net/net/fabricmc/fabric-loader/maven-metadata.xml" | grep -E '<latest>|<release>'
       - name: Grant execute permission
         run: chmod +x mod/${{ matrix.mc_version }}/gradlew
       - name: Setup Gradle
