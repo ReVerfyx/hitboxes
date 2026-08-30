@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using Hitboxes.Launcher.Models;
@@ -26,7 +27,7 @@ public partial class InstanceSettingsWindow : Window
         JavaPathBox.Text = instance.JavaExecutableOverride ?? string.Empty;
 
         var memoryOptions = new List<MemoryOption> { new(null, "Как в общих настройках") };
-        memoryOptions.AddRange(SettingsWindow.BuildMemoryOptionsGb().Select(gb => new MemoryOption(gb, $"{gb} ГБ")));
+        memoryOptions.AddRange(SystemMemory.BuildMemoryOptionsGb().Select(gb => new MemoryOption(gb, $"{gb} ГБ")));
         MemoryOverrideBox.ItemsSource = memoryOptions;
         int? currentGb = instance.MemoryMaxMb is { } mb ? (int)Math.Ceiling(mb / 1024.0) : null;
         MemoryOverrideBox.SelectedItem = memoryOptions.FirstOrDefault(o => o.Gb == currentGb) ?? memoryOptions[0];
@@ -94,6 +95,20 @@ public partial class InstanceSettingsWindow : Window
         catch (Exception ex)
         {
             StatusText.Text = $"Ошибка установки: {ex.Message}";
+        }
+    }
+
+    private void OpenModsFolder_Click(object sender, RoutedEventArgs e)
+    {
+        string modsDir = _instanceService.GetModsDir(_instance);
+        try
+        {
+            Directory.CreateDirectory(modsDir);
+            Process.Start(new ProcessStartInfo(modsDir) { UseShellExecute = true });
+        }
+        catch (Exception ex)
+        {
+            StatusText.Text = $"Не удалось открыть папку: {ex.Message}";
         }
     }
 

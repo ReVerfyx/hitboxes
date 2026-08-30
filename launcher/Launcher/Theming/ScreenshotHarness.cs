@@ -83,7 +83,7 @@ public static class ScreenshotHarness
 
         TryCaptureWindow("MainWindow", () => new MainWindow(), Path.Combine(outputDir, "01-main.png"));
 
-        TryCaptureWindow("SettingsWindow", () => new SettingsWindow(settings),
+        TryCaptureWindow("MainWindow-Settings", () => new MainWindow { ScreenshotInitialView = "Settings" },
             Path.Combine(outputDir, "02-settings.png"));
 
         TryCaptureWindow("NewInstanceWindow", () => new NewInstanceWindow(new MinecraftVersionService(), instanceService),

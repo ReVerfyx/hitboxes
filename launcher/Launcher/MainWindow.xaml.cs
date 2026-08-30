@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
@@ -23,6 +24,9 @@ public partial class MainWindow : Window
 
     private LauncherSettings _settings;
     private InstanceViewModel? _selectedInstance;
+
+    /// <summary>Screenshot-harness-only hook: which tab to land on once Loaded finishes its own setup. Null = Home (the default).</summary>
+    internal string? ScreenshotInitialView { get; set; }
 
     public MainWindow()
     {
@@ -54,23 +58,48 @@ public partial class MainWindow : Window
             SetActiveNav(HomeNavButton);
             if (App.ScreenshotMode) ScreenshotHarness.Log("MainWindow.Loaded: RefreshInstances done.");
 
-            // Music is inaudible in a screenshot and NAudio touches a real
-            // Windows audio device (WaveOutEvent) to play anything — the
-            // same class of native, not-managed-catchable risk the DWM
-            // P/Invoke call turned out to be on this CI image. Skip it
-            // outright here rather than relying on "no assets means Play()
-            // no-ops anyway".
-            if (!App.ScreenshotMode)
+            PlayMenuMusicSafely();
+            if (App.ScreenshotMode) ScreenshotHarness.Log("MainWindow.Loaded: music Play() done.");
+
+            if (ScreenshotInitialView == "Settings")
             {
-                _musicService.Volume = (float)_settings.MainMenuMusicVolume;
-                if (_settings.MainMenuMusicEnabled)
-                {
-                    _musicService.Play();
-                }
+                SettingsButton_Click(this, new RoutedEventArgs());
             }
-            if (App.ScreenshotMode) ScreenshotHarness.Log("MainWindow.Loaded: music Play() done, handler exiting.");
+            if (App.ScreenshotMode) ScreenshotHarness.Log("MainWindow.Loaded: handler exiting.");
         };
         Closed += (_, _) => _musicService.Dispose();
+    }
+
+    /// <summary>
+    /// NAudio's WaveOutEvent touches a real Windows audio device — the same
+    /// class of native, not-managed-catchable risk the earlier DWM P/Invoke
+    /// call turned out to be on the CI image (see GlassWindowHelper's
+    /// removal). Inaudible in a screenshot anyway, so skip it outright
+    /// there; for real usage, still guard with try/catch so a missing/
+    /// broken audio device can't take the rest of a click handler down
+    /// with it (e.g. Settings silently failing to refresh the RAM tile
+    /// because Play() threw before UpdateHomeHero() ran).
+    /// </summary>
+    private void PlayMenuMusicSafely()
+    {
+        if (App.ScreenshotMode) return;
+
+        try
+        {
+            _musicService.Volume = (float)_settings.MainMenuMusicVolume;
+            if (_settings.MainMenuMusicEnabled && !_musicService.IsPlaying)
+            {
+                _musicService.Play();
+            }
+            else if (!_settings.MainMenuMusicEnabled)
+            {
+                _musicService.Stop();
+            }
+        }
+        catch (Exception ex)
+        {
+            StatusText.Text = $"Музыка недоступна: {ex.Message}";
+        }
     }
 
     internal static Color ParseGlassColor(string hex)
@@ -133,15 +162,24 @@ public partial class MainWindow : Window
         }
 
         RamLabel.Text = $"{Math.Max(1, _settings.DefaultMemoryMaxMb / 1024)} ГБ";
-        string username = string.IsNullOrWhiteSpace(UsernameBox.Text) ? "Player" : UsernameBox.Text.Trim();
-        AccountLabel.Text = username;
-        AvatarInitial.Text = username[..1].ToUpperInvariant();
+        AccountLabel.Text = _settings.Username;
+        AccountNameText.Text = _settings.Username;
+        AvatarInitial.Text = _settings.Username[..1].ToUpperInvariant();
     }
 
     private void ShowView(UIElement showing)
     {
-        UIElement hiding = ReferenceEquals(showing, HomeView) ? InstancesView : HomeView;
-        UiAnimations.CrossFadeSwitch(showing, hiding);
+        UIElement[] all = { HomeView, InstancesView, SettingsView };
+        UIElement? hiding = all.FirstOrDefault(v => !ReferenceEquals(v, showing) && v.Visibility == Visibility.Visible);
+        if (hiding is not null)
+        {
+            UiAnimations.CrossFadeSwitch(showing, hiding);
+        }
+        else
+        {
+            showing.Visibility = Visibility.Visible;
+            showing.SetValue(UIElement.OpacityProperty, 1.0);
+        }
     }
 
     private void SetActiveNav(Button active)
@@ -152,6 +190,7 @@ public partial class MainWindow : Window
         // or the trigger silently never matches.
         HomeNavButton.Tag = "False";
         InstancesNavButton.Tag = "False";
+        SettingsNavButton.Tag = "False";
         active.Tag = "True";
     }
 
@@ -172,16 +211,7 @@ public partial class MainWindow : Window
         ShowView(InstancesView);
     }
 
-    private void UsernameBox_TextChanged(object sender, TextChangedEventArgs e)
-    {
-        // Fires as soon as InitializeComponent() sets UsernameBox.Text="Player"
-        // during XAML parsing — at that point AccountLabel (declared later in
-        // the visual tree) hasn't been assigned to its named field yet.
-        if (AccountLabel is null) return;
-        string username = string.IsNullOrWhiteSpace(UsernameBox.Text) ? "Player" : UsernameBox.Text.Trim();
-        AccountLabel.Text = username;
-        AvatarInitial.Text = username[..1].ToUpperInvariant();
-    }
+    private void AccountChip_Click(object sender, RoutedEventArgs e) => SettingsButton_Click(sender, e);
 
     private void NewInstanceButton_Click(object sender, RoutedEventArgs e)
     {
@@ -199,29 +229,85 @@ public partial class MainWindow : Window
 
     private void SettingsButton_Click(object sender, RoutedEventArgs e)
     {
-        var dialog = new SettingsWindow(_settings) { Owner = this };
-        if (dialog.ShowDialog() == true)
+        PageTitle.Text = "Настройки";
+        PageSubtitle.Text = "Параметры лаунчера";
+        SetActiveNav(SettingsNavButton);
+        LoadSettingsView();
+        ShowView(SettingsView);
+    }
+
+    private void LoadSettingsView()
+    {
+        SettingsUsernameBox.Text = _settings.Username;
+        SettingsJavaPathBox.Text = _settings.JavaExecutable;
+        SettingsJvmArgsBox.Text = _settings.DefaultJvmArgs;
+
+        var memoryOptionsGb = SystemMemory.BuildMemoryOptionsGb();
+        SettingsMemoryBox.ItemsSource = memoryOptionsGb;
+        int selectedGb = Math.Max(4, (int)Math.Ceiling(_settings.DefaultMemoryMaxMb / 1024.0));
+        SettingsMemoryBox.SelectedItem = memoryOptionsGb.Contains(selectedGb) ? selectedGb : memoryOptionsGb.FirstOrDefault();
+
+        SettingsMusicEnabledBox.IsChecked = _settings.MainMenuMusicEnabled;
+        SettingsMusicVolumeSlider.Value = _settings.MainMenuMusicVolume;
+        SettingsRainAutoDetectBox.IsChecked = _settings.RainAutoDetectEnabled;
+        SettingsWeatherApiKeyBox.Text = _settings.WeatherApiKey;
+        SettingsWeatherCityBox.Text = _settings.WeatherCity;
+        SettingsGlassHexBox.Text = _settings.GlassTintColor;
+        UpdateSettingsGlassPreview();
+
+        SettingsStatusText.Text = string.Empty;
+    }
+
+    private void GlassSwatch_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
+    {
+        var border = (Border)sender;
+        if (border.Background is SolidColorBrush brush)
         {
-            _settings = dialog.Result;
-            _settingsService.Save(_settings);
-
-            _themeService.RainAutoDetectEnabled = _settings.RainAutoDetectEnabled;
-            _themeService.WeatherApiKey = _settings.WeatherApiKey;
-            _themeService.WeatherCity = _settings.WeatherCity;
-            ThemeService.ApplyGlassTint(ParseGlassColor(_settings.GlassTintColor));
-
-            _musicService.Volume = (float)_settings.MainMenuMusicVolume;
-            if (_settings.MainMenuMusicEnabled && !_musicService.IsPlaying)
-            {
-                _musicService.Play();
-            }
-            else if (!_settings.MainMenuMusicEnabled)
-            {
-                _musicService.Stop();
-            }
-
-            UpdateHomeHero();
+            SettingsGlassHexBox.Text = $"#{brush.Color.R:X2}{brush.Color.G:X2}{brush.Color.B:X2}";
         }
+    }
+
+    private void SettingsGlassHexBox_TextChanged(object sender, TextChangedEventArgs e) => UpdateSettingsGlassPreview();
+
+    private void UpdateSettingsGlassPreview()
+    {
+        if (SettingsGlassPreview is null) return;
+        SettingsGlassPreview.Background = new SolidColorBrush(ParseGlassColor(SettingsGlassHexBox.Text));
+        ThemeService.ApplyGlassTint(ParseGlassColor(SettingsGlassHexBox.Text));
+    }
+
+    private void SaveSettings_Click(object sender, RoutedEventArgs e)
+    {
+        int memoryGb = SettingsMemoryBox.SelectedItem is int value ? value : 4;
+
+        _settings.Username = string.IsNullOrWhiteSpace(SettingsUsernameBox.Text) ? "Player" : SettingsUsernameBox.Text.Trim();
+        _settings.JavaExecutable = string.IsNullOrWhiteSpace(SettingsJavaPathBox.Text) ? "javaw" : SettingsJavaPathBox.Text.Trim();
+        _settings.DefaultMemoryMinMb = 512;
+        _settings.DefaultMemoryMaxMb = memoryGb * 1024;
+        _settings.DefaultJvmArgs = SettingsJvmArgsBox.Text.Trim();
+        _settings.MainMenuMusicEnabled = SettingsMusicEnabledBox.IsChecked == true;
+        _settings.MainMenuMusicVolume = SettingsMusicVolumeSlider.Value;
+        _settings.RainAutoDetectEnabled = SettingsRainAutoDetectBox.IsChecked == true;
+        _settings.WeatherApiKey = string.IsNullOrWhiteSpace(SettingsWeatherApiKeyBox.Text) ? null : SettingsWeatherApiKeyBox.Text.Trim();
+        _settings.WeatherCity = string.IsNullOrWhiteSpace(SettingsWeatherCityBox.Text) ? "Moscow" : SettingsWeatherCityBox.Text.Trim();
+        _settings.GlassTintColor = string.IsNullOrWhiteSpace(SettingsGlassHexBox.Text) ? "#8B7CFF" : SettingsGlassHexBox.Text.Trim();
+
+        // Applying the visible RAM/account tiles first means a save is
+        // always reflected on screen even if something below (theme/music)
+        // throws — this used to be the last thing this method did, behind
+        // a music Play() call that can genuinely fail on a broken/missing
+        // audio device.
+        _settingsService.Save(_settings);
+        UpdateHomeHero();
+
+        _themeService.RainAutoDetectEnabled = _settings.RainAutoDetectEnabled;
+        _themeService.WeatherApiKey = _settings.WeatherApiKey;
+        _themeService.WeatherCity = _settings.WeatherCity;
+        ThemeService.ApplyGlassTint(ParseGlassColor(_settings.GlassTintColor));
+
+        PlayMenuMusicSafely();
+
+        SettingsStatusText.Text = "Сохранено.";
     }
 
     private void EditInstance_Click(object sender, RoutedEventArgs e)
@@ -279,10 +365,10 @@ public partial class MainWindow : Window
 
     private async Task LaunchInstanceAsync(InstanceViewModel vm, Button triggerButton)
     {
-        string username = UsernameBox.Text.Trim();
+        string username = _settings.Username;
         if (!AuthService.IsValidUsername(username))
         {
-            StatusText.Text = "Никнейм: 3–16 символов, латиница/цифры/подчёркивание.";
+            StatusText.Text = "Никнейм: 3–16 символов, латиница/цифры/подчёркивание. Задайте его в Настройках.";
             return;
         }
 

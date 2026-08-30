@@ -48,7 +48,7 @@
                         </StackPanel>
                         <Button x:Name="HomeNavButton" Content="Главная" Style="{StaticResource NavButtonStyle}" Margin="0,0,0,4" Click="HomeButton_Click" />
                         <Button x:Name="InstancesNavButton" Content="Сборки" Style="{StaticResource NavButtonStyle}" Margin="0,0,0,4" Click="InstancesButton_Click" />
-                        <Button Content="Настройки" Style="{StaticResource NavButtonStyle}" Click="SettingsButton_Click" />
+                        <Button x:Name="SettingsNavButton" Content="Настройки" Style="{StaticResource NavButtonStyle}" Click="SettingsButton_Click" />
                     </StackPanel>
 
                     <Border DockPanel.Dock="Bottom" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}"
@@ -83,16 +83,16 @@
                     </StackPanel>
 
                     <Border HorizontalAlignment="Right" Background="{DynamicResource PanelBrush}" BorderBrush="{DynamicResource BorderBrush}"
-                            BorderThickness="1" CornerRadius="14" Padding="8,7">
+                            BorderThickness="1" CornerRadius="14" Padding="8,7" Cursor="Hand" MouseLeftButtonUp="AccountChip_Click"
+                            ToolTip="Открыть настройки, чтобы сменить ник">
                         <StackPanel Orientation="Horizontal">
                             <Border Width="30" Height="30" CornerRadius="9" Background="{StaticResource AccentGradientBrush}">
                                 <TextBlock x:Name="AvatarInitial" Text="P" FontSize="12" FontWeight="Bold" Foreground="White"
                                            HorizontalAlignment="Center" VerticalAlignment="Center" />
                             </Border>
                             <StackPanel Margin="9,0,4,0" VerticalAlignment="Center">
-                                <TextBox x:Name="UsernameBox" Text="Player" FontSize="12" FontWeight="SemiBold"
-                                         Background="Transparent" BorderThickness="0" Padding="0" MinWidth="70"
-                                         Foreground="{DynamicResource TextPrimaryBrush}" TextChanged="UsernameBox_TextChanged" />
+                                <TextBlock x:Name="AccountNameText" Text="Player" FontSize="12" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextPrimaryBrush}" />
                                 <TextBlock Text="Оффлайн аккаунт" FontSize="9" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,2,0,0" />
                             </StackPanel>
                         </StackPanel>
@@ -212,6 +212,84 @@
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
+                        </ScrollViewer>
+                    </Grid>
+
+                    <!-- ============ Settings ============ -->
+                    <Grid x:Name="SettingsView" Visibility="Collapsed" Opacity="0">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <StackPanel MaxWidth="640" HorizontalAlignment="Left" Margin="0,0,0,20">
+
+                                <Border Style="{StaticResource StatCardStyle}" Padding="18" Margin="0,0,0,12">
+                                    <StackPanel>
+                                        <TextBlock Text="Профиль" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,14" />
+                                        <TextBlock Text="Оффлайн ник" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,6" />
+                                        <TextBox x:Name="SettingsUsernameBox" MaxWidth="280" HorizontalAlignment="Left" />
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Style="{StaticResource StatCardStyle}" Padding="18" Margin="0,0,0,12">
+                                    <StackPanel>
+                                        <TextBlock Text="Java и память" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,14" />
+                                        <TextBlock Text="Java" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,6" />
+                                        <TextBox x:Name="SettingsJavaPathBox" Margin="0,0,0,14" />
+                                        <TextBlock Text="Выделенная память" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,6" />
+                                        <ComboBox x:Name="SettingsMemoryBox" MaxWidth="200" HorizontalAlignment="Left" Margin="0,0,0,6">
+                                            <ComboBox.ItemTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding}" />
+                                                </DataTemplate>
+                                            </ComboBox.ItemTemplate>
+                                        </ComboBox>
+                                        <TextBlock Text="От 4 ГБ до доступной физической памяти компьютера"
+                                                   FontSize="9" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,14" />
+                                        <TextBlock Text="Дополнительные аргументы JVM" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,6" />
+                                        <TextBox x:Name="SettingsJvmArgsBox" />
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Style="{StaticResource StatCardStyle}" Padding="18" Margin="0,0,0,12">
+                                    <StackPanel>
+                                        <TextBlock Text="Внешний вид" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,14" />
+                                        <TextBlock Text="Цвет акцента" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,8" />
+                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                                            <Border Width="30" Height="30" CornerRadius="15" Margin="0,0,8,0" Background="#4FA8FF"
+                                                    Cursor="Hand" MouseLeftButtonUp="GlassSwatch_Click" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" />
+                                            <Border Width="30" Height="30" CornerRadius="15" Margin="0,0,8,0" Background="#FF6FA8"
+                                                    Cursor="Hand" MouseLeftButtonUp="GlassSwatch_Click" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" />
+                                            <Border Width="30" Height="30" CornerRadius="15" Margin="0,0,8,0" Background="#7CE0A0"
+                                                    Cursor="Hand" MouseLeftButtonUp="GlassSwatch_Click" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" />
+                                            <Border Width="30" Height="30" CornerRadius="15" Margin="0,0,8,0" Background="#8B7CFF"
+                                                    Cursor="Hand" MouseLeftButtonUp="GlassSwatch_Click" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" />
+                                        </StackPanel>
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBox x:Name="SettingsGlassHexBox" Width="120" Margin="0,0,8,0" TextChanged="SettingsGlassHexBox_TextChanged" />
+                                            <Border x:Name="SettingsGlassPreview" Width="30" Height="30" CornerRadius="15"
+                                                    BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" />
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Style="{StaticResource StatCardStyle}" Padding="18" Margin="0,0,0,12">
+                                    <StackPanel>
+                                        <TextBlock Text="Дополнительно" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,14" />
+                                        <CheckBox x:Name="SettingsMusicEnabledBox" Content="Музыка в главном меню" Margin="0,0,0,14" />
+                                        <TextBlock Text="Громкость" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,4" />
+                                        <Slider x:Name="SettingsMusicVolumeSlider" Minimum="0" Maximum="1" MaxWidth="260" HorizontalAlignment="Left" Margin="0,0,0,14" />
+                                        <CheckBox x:Name="SettingsRainAutoDetectBox" Content="Автоопределение дождя" Margin="0,0,0,14" />
+                                        <TextBlock Text="Ключ OpenWeatherMap" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,6" />
+                                        <TextBox x:Name="SettingsWeatherApiKeyBox" MaxWidth="320" HorizontalAlignment="Left" Margin="0,0,0,10" />
+                                        <TextBlock Text="Город" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,6" />
+                                        <TextBox x:Name="SettingsWeatherCityBox" MaxWidth="220" HorizontalAlignment="Left" />
+                                    </StackPanel>
+                                </Border>
+
+                                <StackPanel Orientation="Horizontal">
+                                    <Button Content="Сохранить" Style="{StaticResource PrimaryButtonStyle}" Padding="20,12" Click="SaveSettings_Click" />
+                                    <TextBlock x:Name="SettingsStatusText" VerticalAlignment="Center" Margin="12,0,0,0"
+                                               Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" />
+                                </StackPanel>
+                            </StackPanel>
                         </ScrollViewer>
                     </Grid>
                 </Grid>

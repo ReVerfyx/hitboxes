@@ -2,6 +2,8 @@ namespace Hitboxes.Launcher.Models;
 
 public sealed class LauncherSettings
 {
+    public string Username { get; set; } = "Player";
+
     public string JavaExecutable { get; set; } = "javaw";
 
     // Prism-style UI exposes one memory value. Xms stays conservative while
