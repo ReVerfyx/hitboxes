@@ -31,9 +31,6 @@ jobs:
         with:
           distribution: temurin
           java-version: ${{ matrix.java_version }}
-      - name: TEMP - print latest real Yarn build for this MC version
-        if: matrix.mc_version == '1.21.4'
-        run: curl -sS "https://meta.fabricmc.net/v2/versions/yarn/${{ matrix.mc_version }}" | head -c 2000
       - name: Grant execute permission
         run: chmod +x mod/${{ matrix.mc_version }}/gradlew
       - name: Setup Gradle
