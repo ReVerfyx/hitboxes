@@ -5,14 +5,14 @@ buildscript {
 		gradlePluginPortal()
 	}
 	dependencies {
-		// A range instead of an exact patch pin — same reasoning as the
-		// 1.16.5 module's fabric_version range: avoids guessing an exact
-		// published Loom version that might not exist, letting Gradle
-		// resolve the latest real 1.7.x/1.8.x/etc. build from Fabric's own
-		// Maven metadata at build time. The plugins{} DSL requires an exact
-		// version string, so this legacy buildscript+apply-plugin form is
-		// used instead specifically to allow a range here.
-		classpath "net.fabricmc:fabric-loom:[1.7,2.0)"
+		// Exact pin, not a range: an open range like "[1.7,2.0)" resolves
+		// to whatever Maven's own <release>/<latest> tag points at, which
+		// turned out to be an unstable alpha (1.18.0-alpha.19) with a real
+		// access-widener remap bug ("Cannot remap access widener from
+		// namespace 'official'. Expected: 'intermediary'"). 1.17.20 is the
+		// latest actually-stable release per
+		// https://maven.fabricmc.net/net/fabricmc/fabric-loom/maven-metadata.xml.
+		classpath "net.fabricmc:fabric-loom:1.17.20"
 	}
 }
 
