@@ -1,0 +1,50 @@
+<Window x:Class="Hitboxes.Launcher.FirstRunWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Добро пожаловать в ReVerfyx Client" Height="440" Width="440" MinHeight="360"
+        Background="{DynamicResource BackgroundBrush}"
+        FontFamily="{StaticResource AppFontFamily}"
+        Foreground="{DynamicResource TextPrimaryBrush}"
+        WindowStartupLocation="CenterScreen" ResizeMode="NoResize">
+
+    <Border Style="{StaticResource GlassCardStyle}" Margin="16">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto" Padding="22,22,22,0">
+        <StackPanel>
+            <TextBlock Text="Добро пожаловать!" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,4" />
+            <TextBlock Text="Быстрая настройка перед первым запуском" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,20" TextWrapping="Wrap" />
+
+            <TextBlock Text="Ваш ник (оффлайн-аккаунт)" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" Margin="0,0,0,6" />
+            <TextBox x:Name="NicknameBox" Text="Player" Margin="0,0,0,18" />
+
+            <TextBlock Text="Оперативная память для игры" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" Margin="0,0,0,6" />
+            <ComboBox x:Name="MemoryBox" MaxWidth="200" HorizontalAlignment="Left" Margin="0,0,0,4">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock>
+                            <TextBlock.Text>
+                                <Binding StringFormat="{}{0} ГБ" />
+                            </TextBlock.Text>
+                        </TextBlock>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+            <TextBlock Text="Можно изменить позже в Настройках" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,18" />
+
+            <TextBlock Text="После этого сразу предложим создать первую сборку." FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,8" TextWrapping="Wrap" />
+
+            <TextBlock x:Name="ErrorText" Foreground="#D9534F" Margin="0,0,0,8" TextWrapping="Wrap" />
+        </StackPanel>
+        </ScrollViewer>
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="22,8,22,22">
+            <Button Content="Начать" Style="{StaticResource PrimaryButtonStyle}" Click="Start_Click" />
+        </StackPanel>
+    </Grid>
+    </Border>
+</Window>

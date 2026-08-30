@@ -67,6 +67,14 @@ jobs:
           Get-ChildItem mod-artifact\*.jar |
             Where-Object { $_.Name -notlike '*-sources.jar' } |
             Copy-Item -Destination publish\bundled-mod
+          # Fixed filename for the installer (Package.wxs references it by
+          # name — the real jar name carries the mod version and would
+          # otherwise change every release).
+          $modJar = Get-ChildItem publish\bundled-mod\*.jar | Select-Object -First 1
+          $fixedNamePath = Join-Path publish\bundled-mod "ReVerfyxClient.jar"
+          if ($modJar.FullName -ne (Resolve-Path $fixedNamePath -ErrorAction SilentlyContinue)) {
+            Copy-Item $modJar.FullName -Destination $fixedNamePath -Force
+          }
 
       - name: Capture UI screenshots
         shell: pwsh
@@ -126,4 +134,66 @@ jobs:
         with:
           name: ReVerfyx-Launcher-Bundle-Windows-x64
           path: publish/
+          if-no-files-found: error
+
+      - name: Build MSI package
+        run: dotnet build installer\Package\Package.wixproj --configuration Release
+
+      - name: Locate built MSI
+        shell: pwsh
+        run: |
+          $msi = Get-ChildItem -Path installer\Package\bin -Recurse -Filter *.msi | Select-Object -First 1
+          if (-not $msi) {
+            Write-Host "##[error]No MSI was produced by the WiX package build."
+            exit 1
+          }
+          Copy-Item $msi.FullName -Destination installer\Package\ReVerfyxClientLauncher.msi -Force
+          Write-Host "MSI at: $($msi.FullName)"
+
+      - name: Build Setup.exe (WiX bundle)
+        run: dotnet build installer\Bundle\Bundle.wixproj --configuration Release
+
+      - name: Locate built Setup.exe
+        shell: pwsh
+        run: |
+          $exe = Get-ChildItem -Path installer\Bundle\bin -Recurse -Filter *.exe | Select-Object -First 1
+          if (-not $exe) {
+            Write-Host "##[error]No installer exe was produced by the WiX bundle build."
+            exit 1
+          }
+          Copy-Item $exe.FullName -Destination "ReVerfyxClientLauncherSetup.exe" -Force
+          Write-Host "Setup.exe at: $($exe.FullName)"
+
+      - name: Validate installer (silent install + uninstall)
+        shell: pwsh
+        run: |
+          $installLog = "$env:RUNNER_TEMP\install.log"
+          Start-Process -FilePath ".\ReVerfyxClientLauncherSetup.exe" `
+            -ArgumentList "/quiet", "/norestart", "/log", $installLog -Wait -PassThru | Out-Null
+
+          $installedExe = "$env:ProgramFiles\ReVerfyx Client Launcher\ReVerfyxClientLauncher.exe"
+          $installedJar = "$env:ProgramFiles\ReVerfyx Client Launcher\bundled-mod\ReVerfyxClient.jar"
+          if (-not (Test-Path $installedExe) -or -not (Test-Path $installedJar)) {
+            Write-Host "##[error]Installer did not place the launcher/mod jar where expected."
+            Get-Content $installLog -ErrorAction SilentlyContinue | Select-Object -Last 300
+            exit 1
+          }
+          Write-Host "Installed OK: $installedExe"
+
+          $uninstallLog = "$env:RUNNER_TEMP\uninstall.log"
+          Start-Process -FilePath ".\ReVerfyxClientLauncherSetup.exe" `
+            -ArgumentList "/uninstall", "/quiet", "/norestart", "/log", $uninstallLog -Wait -PassThru | Out-Null
+
+          if (Test-Path $installedExe) {
+            Write-Host "##[error]Uninstall did not remove the launcher exe."
+            Get-Content $uninstallLog -ErrorAction SilentlyContinue | Select-Object -Last 300
+            exit 1
+          }
+          Write-Host "Uninstalled OK."
+
+      - name: Upload installer (Setup.exe)
+        uses: actions/upload-artifact@v4
+        with:
+          name: ReVerfyx-Launcher-Setup
+          path: ReVerfyxClientLauncherSetup.exe
           if-no-files-found: error

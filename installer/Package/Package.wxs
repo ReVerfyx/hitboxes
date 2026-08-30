@@ -1,0 +1,44 @@
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Package Name="ReVerfyx Client Launcher"
+           Manufacturer="ReVerfyx"
+           Version="1.0.0"
+           UpgradeCode="5b1f6b9a-6f0e-4d3a-9c1f-2b7e2b6a0f3e"
+           Scope="perMachine">
+
+    <MajorUpgrade DowngradeErrorMessage="Уже установлена более новая версия [ProductName]." />
+    <MediaTemplate EmbedCab="yes" />
+
+    <StandardDirectory Id="ProgramFiles64Folder">
+      <Directory Id="INSTALLFOLDER" Name="ReVerfyx Client Launcher">
+        <Component Id="MainExecutable" Guid="5c1e1b1a-2222-4a11-9b11-000000000001">
+          <File Id="LauncherExe" Source="..\..\publish\ReVerfyxClientLauncher.exe" KeyPath="yes">
+            <Shortcut Id="StartMenuShortcut"
+                      Directory="ProgramMenuFolder"
+                      Name="ReVerfyx Client Launcher"
+                      WorkingDirectory="INSTALLFOLDER"
+                      Advertise="yes" />
+            <Shortcut Id="DesktopShortcut"
+                      Directory="DesktopFolder"
+                      Name="ReVerfyx Client Launcher"
+                      WorkingDirectory="INSTALLFOLDER"
+                      Advertise="yes" />
+          </File>
+        </Component>
+
+        <Directory Id="BundledModDir" Name="bundled-mod">
+          <Component Id="BundledModComponent" Guid="5c1e1b1a-2222-4a11-9b11-000000000002">
+            <File Id="BundledModJar" Source="..\..\publish\bundled-mod\ReVerfyxClient.jar" KeyPath="yes" />
+          </Component>
+        </Directory>
+      </Directory>
+    </StandardDirectory>
+
+    <StandardDirectory Id="ProgramMenuFolder" />
+    <StandardDirectory Id="DesktopFolder" />
+
+    <Feature Id="MainFeature" Title="ReVerfyx Client Launcher" Level="1">
+      <ComponentRef Id="MainExecutable" />
+      <ComponentRef Id="BundledModComponent" />
+    </Feature>
+  </Package>
+</Wix>

@@ -11,6 +11,16 @@ namespace Hitboxes.Launcher;
 
 public partial class MainWindow : Window
 {
+    private sealed class AccountRow
+    {
+        public required Account Account { get; init; }
+        public required bool IsCurrent { get; init; }
+        public string Username => Account.Username;
+        public bool CanSelect => !IsCurrent;
+        public Visibility CurrentBadgeVisibility => IsCurrent ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+
     private readonly string _rootDir = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
         "HitboxesLauncher");
@@ -57,6 +67,11 @@ public partial class MainWindow : Window
             RefreshInstances();
             SetActiveNav(HomeNavButton);
             if (App.ScreenshotMode) ScreenshotHarness.Log("MainWindow.Loaded: RefreshInstances done.");
+
+            if (!App.ScreenshotMode && _instanceService.LoadAll().Count == 0)
+            {
+                NewInstanceButton_Click(this, new RoutedEventArgs());
+            }
 
             PlayMenuMusicSafely();
             if (App.ScreenshotMode) ScreenshotHarness.Log("MainWindow.Loaded: music Play() done.");
@@ -162,9 +177,10 @@ public partial class MainWindow : Window
         }
 
         RamLabel.Text = $"{Math.Max(1, _settings.DefaultMemoryMaxMb / 1024)} ГБ";
-        AccountLabel.Text = _settings.Username;
-        AccountNameText.Text = _settings.Username;
-        AvatarInitial.Text = _settings.Username[..1].ToUpperInvariant();
+        string username = _settings.CurrentAccount?.Username ?? "Player";
+        AccountLabel.Text = username;
+        AccountNameText.Text = username;
+        AvatarInitial.Text = username[..1].ToUpperInvariant();
     }
 
     private void ShowView(UIElement showing)
@@ -238,7 +254,7 @@ public partial class MainWindow : Window
 
     private void LoadSettingsView()
     {
-        SettingsUsernameBox.Text = _settings.Username;
+        RefreshAccountsList();
         SettingsJavaPathBox.Text = _settings.JavaExecutable;
         SettingsJvmArgsBox.Text = _settings.DefaultJvmArgs;
 
@@ -256,6 +272,66 @@ public partial class MainWindow : Window
         UpdateSettingsGlassPreview();
 
         SettingsStatusText.Text = string.Empty;
+    }
+
+    private void RefreshAccountsList()
+    {
+        AccountsList.ItemsSource = _settings.Accounts
+            .Select(a => new AccountRow { Account = a, IsCurrent = a.Id == _settings.CurrentAccountId })
+            .ToList();
+    }
+
+    private void AddAccount_Click(object sender, RoutedEventArgs e)
+    {
+        string name = NewAccountNameBox.Text.Trim();
+        if (!AuthService.IsValidUsername(name))
+        {
+            AccountsStatusText.Text = "Ник: 3–16 символов, латиница/цифры/подчёркивание.";
+            return;
+        }
+        if (_settings.Accounts.Any(a => string.Equals(a.Username, name, StringComparison.OrdinalIgnoreCase)))
+        {
+            AccountsStatusText.Text = "Такой аккаунт уже есть.";
+            return;
+        }
+
+        var account = new Account { Username = name };
+        _settings.Accounts.Add(account);
+        _settings.CurrentAccountId = account.Id;
+        _settingsService.Save(_settings);
+
+        NewAccountNameBox.Text = string.Empty;
+        AccountsStatusText.Text = string.Empty;
+        RefreshAccountsList();
+        UpdateHomeHero();
+    }
+
+    private void SelectAccount_Click(object sender, RoutedEventArgs e)
+    {
+        var account = (Account)((FrameworkElement)sender).Tag;
+        _settings.CurrentAccountId = account.Id;
+        _settingsService.Save(_settings);
+        RefreshAccountsList();
+        UpdateHomeHero();
+    }
+
+    private void DeleteAccount_Click(object sender, RoutedEventArgs e)
+    {
+        var account = (Account)((FrameworkElement)sender).Tag;
+        if (_settings.Accounts.Count <= 1)
+        {
+            AccountsStatusText.Text = "Нужен хотя бы один аккаунт.";
+            return;
+        }
+
+        _settings.Accounts.Remove(account);
+        if (_settings.CurrentAccountId == account.Id)
+        {
+            _settings.CurrentAccountId = _settings.Accounts[0].Id;
+        }
+        _settingsService.Save(_settings);
+        RefreshAccountsList();
+        UpdateHomeHero();
     }
 
     private void GlassSwatch_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
@@ -280,7 +356,6 @@ public partial class MainWindow : Window
     {
         int memoryGb = SettingsMemoryBox.SelectedItem is int value ? value : 4;
 
-        _settings.Username = string.IsNullOrWhiteSpace(SettingsUsernameBox.Text) ? "Player" : SettingsUsernameBox.Text.Trim();
         _settings.JavaExecutable = string.IsNullOrWhiteSpace(SettingsJavaPathBox.Text) ? "javaw" : SettingsJavaPathBox.Text.Trim();
         _settings.DefaultMemoryMinMb = 512;
         _settings.DefaultMemoryMaxMb = memoryGb * 1024;
@@ -365,7 +440,7 @@ public partial class MainWindow : Window
 
     private async Task LaunchInstanceAsync(InstanceViewModel vm, Button triggerButton)
     {
-        string username = _settings.Username;
+        string username = _settings.CurrentAccount?.Username ?? "Player";
         if (!AuthService.IsValidUsername(username))
         {
             StatusText.Text = "Никнейм: 3–16 символов, латиница/цифры/подчёркивание. Задайте его в Настройках.";

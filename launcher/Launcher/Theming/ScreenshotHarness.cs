@@ -81,6 +81,8 @@ public static class ScreenshotHarness
         File.WriteAllText(Path.Combine(modsDir, "sodium-fabric-0.4.10+1.16.5.jar"), string.Empty);
         File.WriteAllText(Path.Combine(modsDir, "lithium-fabric-mc1.16.5-0.6.4.jar"), string.Empty);
 
+        TryCaptureWindow("FirstRunWindow", () => new FirstRunWindow(rootDir), Path.Combine(outputDir, "00-first-run.png"));
+
         TryCaptureWindow("MainWindow", () => new MainWindow(), Path.Combine(outputDir, "01-main.png"));
 
         TryCaptureWindow("MainWindow-Settings", () => new MainWindow { ScreenshotInitialView = "Settings" },

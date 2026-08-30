@@ -2,7 +2,12 @@ namespace Hitboxes.Launcher.Models;
 
 public sealed class LauncherSettings
 {
-    public string Username { get; set; } = "Player";
+    public List<Account> Accounts { get; set; } = new();
+    public string? CurrentAccountId { get; set; }
+
+    /// <summary>Not persisted (no setter) — computed from Accounts/CurrentAccountId on every read.</summary>
+    public Account? CurrentAccount =>
+        Accounts.FirstOrDefault(a => a.Id == CurrentAccountId) ?? Accounts.FirstOrDefault();
 
     public string JavaExecutable { get; set; } = "javaw";
 

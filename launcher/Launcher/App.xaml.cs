@@ -1,3 +1,4 @@
+using System.IO;
 using System.Windows;
 using Hitboxes.Launcher.Theming;
 
@@ -23,7 +24,7 @@ public partial class App : Application
         // to animate ("sealed or frozen" InvalidOperationException). Each
         // window registers the same shared brush instances into its own
         // (non-frozen) Resources instead — see ThemeResources.Register
-        // calls in MainWindow/NewInstanceWindow/InstanceSettingsWindow.
+        // calls in MainWindow/NewInstanceWindow/InstanceSettingsWindow/FirstRunWindow.
 
         int captureIndex = Array.IndexOf(e.Args, "--capture-screenshots");
         if (captureIndex >= 0 && captureIndex + 1 < e.Args.Length)
@@ -63,6 +64,20 @@ public partial class App : Application
             ScreenshotHarness.Run(outputDir);
             Shutdown();
             return;
+        }
+
+        string rootDir = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+            "HitboxesLauncher");
+        bool isFirstRun = !File.Exists(Path.Combine(rootDir, "settings.json"));
+        if (isFirstRun)
+        {
+            var firstRun = new FirstRunWindow(rootDir);
+            if (firstRun.ShowDialog() != true)
+            {
+                Shutdown();
+                return;
+            }
         }
 
         var mainWindow = new MainWindow();

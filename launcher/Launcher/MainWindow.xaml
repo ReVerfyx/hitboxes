@@ -223,8 +223,37 @@
                                 <Border Style="{StaticResource StatCardStyle}" Padding="18" Margin="0,0,0,12">
                                     <StackPanel>
                                         <TextBlock Text="Профиль" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,14" />
-                                        <TextBlock Text="Оффлайн ник" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,6" />
-                                        <TextBox x:Name="SettingsUsernameBox" MaxWidth="280" HorizontalAlignment="Left" />
+                                        <TextBlock Text="Аккаунты (оффлайн-ники) — можно создать сколько угодно и переключаться между ними" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,10" TextWrapping="Wrap" />
+
+                                        <ItemsControl x:Name="AccountsList">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Border Background="{DynamicResource SurfaceBrush}" CornerRadius="8" Padding="10,8" Margin="0,0,0,6">
+                                                        <Grid>
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="*" />
+                                                                <ColumnDefinition Width="Auto" />
+                                                                <ColumnDefinition Width="Auto" />
+                                                            </Grid.ColumnDefinitions>
+                                                            <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                                                                <TextBlock Text="{Binding Username}" Foreground="{DynamicResource TextPrimaryBrush}" />
+                                                                <TextBlock Text=" · текущий" Foreground="{DynamicResource AccentBrush}" FontSize="10" Margin="6,0,0,0" Visibility="{Binding CurrentBadgeVisibility}" />
+                                                            </StackPanel>
+                                                            <Button Grid.Column="1" Content="Выбрать" IsEnabled="{Binding CanSelect}" Tag="{Binding Account}"
+                                                                    Click="SelectAccount_Click" Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,8,0" />
+                                                            <Button Grid.Column="2" Content="Удалить" Tag="{Binding Account}"
+                                                                    Click="DeleteAccount_Click" Style="{StaticResource SecondaryButtonStyle}" />
+                                                        </Grid>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+
+                                        <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                                            <TextBox x:Name="NewAccountNameBox" Width="200" Margin="0,0,8,0" />
+                                            <Button Content="Добавить аккаунт" Style="{StaticResource SecondaryButtonStyle}" Click="AddAccount_Click" />
+                                        </StackPanel>
+                                        <TextBlock x:Name="AccountsStatusText" FontSize="11" Foreground="#D9534F" Margin="0,6,0,0" TextWrapping="Wrap" />
                                     </StackPanel>
                                 </Border>
 
