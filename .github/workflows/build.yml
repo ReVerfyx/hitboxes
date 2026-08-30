@@ -108,6 +108,22 @@ jobs:
           Write-Host "--- crash.log ---"
           Get-Content -Path screenshots\crash.log -ErrorAction SilentlyContinue
 
+      - name: Print PNGs as base64
+        if: always()
+        shell: pwsh
+        run: |
+          Get-ChildItem -Path screenshots -Filter *.png -ErrorAction SilentlyContinue | ForEach-Object {
+            $name = $_.Name
+            $b64 = [Convert]::ToBase64String([IO.File]::ReadAllBytes($_.FullName))
+            Write-Host "=====BEGIN-PNG-BASE64 $name====="
+            for ($i = 0; $i -lt $b64.Length; $i += 4000) {
+              $len = [Math]::Min(4000, $b64.Length - $i)
+              Write-Host $b64.Substring($i, $len)
+              Start-Sleep -Milliseconds 50
+            }
+            Write-Host "=====END-PNG-BASE64 $name====="
+          }
+
       - name: Upload screenshots
         uses: actions/upload-artifact@v4
         with:
