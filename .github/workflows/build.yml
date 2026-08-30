@@ -31,6 +31,9 @@ jobs:
         with:
           distribution: temurin
           java-version: ${{ matrix.java_version }}
+      - name: TEMP - print real Loom versions (the open [1.7,2.0) range picked an alpha)
+        if: matrix.mc_version == '1.21.4'
+        run: curl -sS "https://maven.fabricmc.net/net/fabricmc/fabric-loom/maven-metadata.xml"
       - name: Grant execute permission
         run: chmod +x mod/${{ matrix.mc_version }}/gradlew
       - name: Setup Gradle
