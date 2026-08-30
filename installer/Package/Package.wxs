@@ -10,7 +10,7 @@
 
     <StandardDirectory Id="ProgramFiles64Folder">
       <Directory Id="INSTALLFOLDER" Name="ReVerfyx Client Launcher">
-        <Component Id="MainExecutable" Guid="5c1e1b1a-2222-4a11-9b11-000000000001">
+        <Component Id="MainExecutable" Guid="5c1e1b1a-2222-4a11-9b11-000000000001" Bitness="always64">
           <File Id="LauncherExe" Source="..\..\publish\ReVerfyxClientLauncher.exe" KeyPath="yes">
             <Shortcut Id="StartMenuShortcut"
                       Directory="ProgramMenuFolder"
@@ -26,7 +26,7 @@
         </Component>
 
         <Directory Id="BundledModDir" Name="bundled-mod">
-          <Component Id="BundledModComponent" Guid="5c1e1b1a-2222-4a11-9b11-000000000002">
+          <Component Id="BundledModComponent" Guid="5c1e1b1a-2222-4a11-9b11-000000000002" Bitness="always64">
             <File Id="BundledModJar" Source="..\..\publish\bundled-mod\ReVerfyxClient.jar" KeyPath="yes" />
           </Component>
         </Directory>
