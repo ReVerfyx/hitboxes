@@ -156,6 +156,10 @@ public partial class MainWindow : Window
 
     private void UsernameBox_TextChanged(object sender, TextChangedEventArgs e)
     {
+        // Fires as soon as InitializeComponent() sets UsernameBox.Text="Player"
+        // during XAML parsing — at that point AccountLabel (declared later in
+        // the visual tree) hasn't been assigned to its named field yet.
+        if (AccountLabel is null) return;
         AccountLabel.Text = string.IsNullOrWhiteSpace(UsernameBox.Text) ? "Player" : UsernameBox.Text.Trim();
     }
 
