@@ -15,12 +15,15 @@ jobs:
       matrix:
         include:
           # 1.16.5: old Loom 0.10.x branch, needs Java 8 bytecode and is
-          # happy on JDK 17. 1.21.4: modern Loom, requires JDK 21 (the
-          # same minimum Mojang requires to run 1.21.4 itself).
+          # happy on JDK 17. 1.21.4: modern Loom resolved from a [1.7,2.0)
+          # range — the latest matching build's own toolchain requires
+          # JDK 25 to run (separate from the JDK 21 bytecode it actually
+          # compiles the mod's classes to, which build.gradle pins via
+          # sourceCompatibility/targetCompatibility).
           - mc_version: "1.16.5"
             java_version: "17"
           - mc_version: "1.21.4"
-            java_version: "21"
+            java_version: "25"
     steps:
       - uses: actions/checkout@v4
       - name: Setup JDK
