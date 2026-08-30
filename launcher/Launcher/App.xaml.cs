@@ -1,5 +1,6 @@
 using System.IO;
 using System.Windows;
+using Hitboxes.Launcher.Services;
 using Hitboxes.Launcher.Theming;
 
 namespace Hitboxes.Launcher;
@@ -69,6 +70,32 @@ public partial class App : Application
         string rootDir = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
             "HitboxesLauncher");
+
+        DevLog.Initialize(rootDir);
+        DevLog.Log($"Launcher started. Version {typeof(App).Assembly.GetName().Version}.");
+
+        // Without these, a real user's crash just vanishes (or shows the
+        // default WPF "unhandled exception" dialog with no way to copy the
+        // detail) — the screenshot-mode-only crash.log above doesn't cover
+        // a normal run at all. Log the full exception (not just .Message,
+        // which is what StatusText shows elsewhere) so Settings →
+        // Разработчик has something a user can actually copy and send.
+        AppDomain.CurrentDomain.UnhandledException += (_, args) =>
+            DevLog.Log($"FATAL (AppDomain.UnhandledException, IsTerminating={args.IsTerminating}):\n{args.ExceptionObject}");
+        DispatcherUnhandledException += (_, args) =>
+        {
+            DevLog.Log($"UNHANDLED (Dispatcher):\n{args.Exception}");
+            MessageBox.Show(
+                $"Необработанная ошибка:\n{args.Exception.Message}\n\nПолный текст сохранён в Настройки → Разработчик.",
+                "ReVerfyx Client Launcher", MessageBoxButton.OK, MessageBoxImage.Error);
+            args.Handled = true;
+        };
+        System.Threading.Tasks.TaskScheduler.UnobservedTaskException += (_, args) =>
+        {
+            DevLog.Log($"UNOBSERVED TASK EXCEPTION:\n{args.Exception}");
+            args.SetObserved();
+        };
+
         bool isFirstRun = !File.Exists(Path.Combine(rootDir, "settings.json"));
         if (isFirstRun)
         {

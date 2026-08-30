@@ -86,6 +86,23 @@ public partial class MainWindow : Window
         Closed += (_, _) => _musicService.Dispose();
     }
 
+    /// <summary>Sets the status bar text and mirrors it into DevLog. Use the
+    /// (message, exception) overload wherever an exception was actually
+    /// caught — StatusText stays short (ex.Message), DevLog gets the full
+    /// ex.ToString() (with stack trace) so Settings → Разработчик has
+    /// enough detail to actually diagnose a real failure from.</summary>
+    private void SetStatus(string message)
+    {
+        StatusText.Text = message;
+        DevLog.Log(message);
+    }
+
+    private void SetStatus(string message, Exception ex)
+    {
+        StatusText.Text = message;
+        DevLog.Log($"{message}\n{ex}");
+    }
+
     /// <summary>
     /// NAudio's WaveOutEvent touches a real Windows audio device — the same
     /// class of native, not-managed-catchable risk the earlier DWM P/Invoke
@@ -114,7 +131,7 @@ public partial class MainWindow : Window
         }
         catch (Exception ex)
         {
-            StatusText.Text = $"Музыка недоступна: {ex.Message}";
+            SetStatus($"Музыка недоступна: {ex.Message}", ex);
         }
     }
 
@@ -204,7 +221,7 @@ public partial class MainWindow : Window
         }
         catch (Exception ex)
         {
-            StatusText.Text = $"Не удалось открыть папку: {ex.Message}";
+            SetStatus($"Не удалось открыть папку: {ex.Message}", ex);
         }
     }
 
@@ -270,7 +287,7 @@ public partial class MainWindow : Window
         }
         catch (Exception ex)
         {
-            StatusText.Text = $"Не удалось открыть папку: {ex.Message}";
+            SetStatus($"Не удалось открыть папку: {ex.Message}", ex);
         }
     }
 
@@ -341,7 +358,45 @@ public partial class MainWindow : Window
         SettingsGlassHexBox.Text = _settings.GlassTintColor;
         UpdateSettingsGlassPreview();
 
+        RefreshDevConsole();
+
         SettingsStatusText.Text = string.Empty;
+    }
+
+    private void RefreshDevConsole()
+    {
+        DevConsoleBox.Text = DevLog.GetAll();
+        DevConsoleBox.CaretIndex = DevConsoleBox.Text.Length;
+        DevConsoleBox.ScrollToEnd();
+    }
+
+    private void RefreshDevConsole_Click(object sender, RoutedEventArgs e) => RefreshDevConsole();
+
+    private void CopyDevConsole_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            Clipboard.SetText(DevLog.GetAll());
+            SettingsStatusText.Text = "Журнал скопирован в буфер обмена.";
+        }
+        catch (Exception ex)
+        {
+            SettingsStatusText.Text = $"Не удалось скопировать: {ex.Message}";
+        }
+    }
+
+    private void OpenLogsFolder_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            string logsDir = Path.Combine(_rootDir, "logs");
+            Directory.CreateDirectory(logsDir);
+            Process.Start(new ProcessStartInfo(logsDir) { UseShellExecute = true });
+        }
+        catch (Exception ex)
+        {
+            SetStatus($"Не удалось открыть папку логов: {ex.Message}", ex);
+        }
     }
 
     private void SettingsMemorySlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
@@ -512,7 +567,7 @@ public partial class MainWindow : Window
         }
         catch (Exception ex)
         {
-            StatusText.Text = $"Не удалось скачать Fabric API: {ex.Message}";
+            SetStatus($"Не удалось скачать Fabric API: {ex.Message}", ex);
         }
     }
 
@@ -521,13 +576,13 @@ public partial class MainWindow : Window
         string username = _settings.CurrentAccount?.Username ?? "Player";
         if (!AuthService.IsValidUsername(username))
         {
-            StatusText.Text = "Никнейм: 3–16 символов, латиница/цифры/подчёркивание. Задайте его в Настройках.";
+            SetStatus("Никнейм: 3–16 символов, латиница/цифры/подчёркивание. Задайте его в Настройках.");
             return;
         }
 
         triggerButton.IsEnabled = false;
         UiAnimations.StartPulse(triggerButton);
-        var progress = new Progress<string>(msg => StatusText.Text = msg);
+        var progress = new Progress<string>(SetStatus);
 
         try
         {
@@ -565,15 +620,15 @@ public partial class MainWindow : Window
             instance.LastPlayedAt = DateTimeOffset.UtcNow;
             _instanceService.Save(instance);
 
-            StatusText.Text = ownModInstalled
+            SetStatus(ownModInstalled
                 ? $"Запущено: {instance.Name} ({launchDetail.Id}) как {username}."
                 : $"Запущено: {instance.Name} ({launchDetail.Id}) как {username}. "
-                    + $"ReVerfyx Client недоступен для {instance.McVersion} — доступные версии: {string.Join(", ", BundledModService.SupportedMcVersions)}.";
+                    + $"ReVerfyx Client недоступен для {instance.McVersion} — доступные версии: {string.Join(", ", BundledModService.SupportedMcVersions)}.");
             RefreshInstances();
         }
         catch (Exception ex)
         {
-            StatusText.Text = $"Ошибка запуска: {ex.Message}";
+            SetStatus($"Ошибка запуска: {ex.Message}", ex);
         }
         finally
         {
