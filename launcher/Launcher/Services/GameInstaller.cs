@@ -1,4 +1,5 @@
 using System.IO;
+using System.IO.Compression;
 using System.Net.Http;
 using System.Text.Json;
 using Hitboxes.Launcher.Models;
@@ -9,11 +10,13 @@ namespace Hitboxes.Launcher.Services;
 /// Downloads exactly what the official version JSON points at: the client
 /// jar, the Windows-applicable libraries (native and pure-Java), and the
 /// asset objects listed in that version's asset index. Everything is
-/// fetched straight from Mojang's CDN URLs embedded in the manifest.
+/// fetched from Mojang's CDN URLs embedded in the manifest — through a
+/// user-configured proxy, and/or a user-supplied mirror host (see
+/// NetworkSettings) when the direct connection fails.
 /// </summary>
 public sealed class GameInstaller
 {
-    private readonly HttpClient _http = new();
+    private readonly HttpClient _http = NetworkSettings.CreateHttpClient();
     private readonly string _rootDir;
 
     public GameInstaller(string rootDir)
@@ -51,6 +54,17 @@ public sealed class GameInstaller
                 string libPath = Path.Combine(LibrariesDir, artifact.Path.Replace('/', Path.DirectorySeparatorChar));
                 progress?.Report($"Библиотека {library.Name}...");
                 await DownloadIfMissingAsync(artifact.Url, libPath, artifact.Sha1);
+                classpathEntries.Add(libPath);
+            }
+            else if (!string.IsNullOrEmpty(library.Url) && !string.IsNullOrEmpty(library.Name))
+            {
+                // Fabric-style entry: "name" is a Maven coordinate, "url" is
+                // the repo base — derive the standard Maven layout path.
+                string relativePath = MavenCoordinateToPath(library.Name);
+                string libPath = Path.Combine(LibrariesDir, relativePath.Replace('/', Path.DirectorySeparatorChar));
+                string url = library.Url.TrimEnd('/') + "/" + relativePath;
+                progress?.Report($"Библиотека {library.Name}...");
+                await DownloadIfMissingAsync(url, libPath, expectedSha1: null);
                 classpathEntries.Add(libPath);
             }
 
@@ -116,16 +130,35 @@ public sealed class GameInstaller
 
         Directory.CreateDirectory(Path.GetDirectoryName(destinationPath)!);
 
-        using var response = await _http.GetAsync(url);
-        response.EnsureSuccessStatusCode();
-
-        string tempPath = destinationPath + ".tmp";
-        await using (var fileStream = File.Create(tempPath))
+        HttpResponseMessage response;
+        try
         {
-            await response.Content.CopyToAsync(fileStream);
+            response = await _http.GetAsync(url);
+            response.EnsureSuccessStatusCode();
+        }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
+        {
+            string? mirrorUrl = NetworkSettings.TryGetMirrorUrl(url);
+            if (mirrorUrl is null)
+            {
+                throw;
+            }
+
+            DevLog.Log($"{url} unreachable ({ex.Message}) — retrying via mirror {mirrorUrl}");
+            response = await _http.GetAsync(mirrorUrl);
+            response.EnsureSuccessStatusCode();
         }
 
-        File.Move(tempPath, destinationPath, overwrite: true);
+        using (response)
+        {
+            string tempPath = destinationPath + ".tmp";
+            await using (var fileStream = File.Create(tempPath))
+            {
+                await response.Content.CopyToAsync(fileStream);
+            }
+
+            File.Move(tempPath, destinationPath, overwrite: true);
+        }
     }
 
     private static bool IsAllowedOnWindows(Library library)
@@ -146,6 +179,17 @@ public sealed class GameInstaller
             allowed = rule.Action == "allow";
         }
         return allowed;
+    }
+
+    /// <summary>"group.id:artifact:version[:classifier]" -&gt; standard Maven repo-relative path.</summary>
+    private static string MavenCoordinateToPath(string coordinate)
+    {
+        string[] parts = coordinate.Split(':');
+        string group = parts[0].Replace('.', '/');
+        string artifact = parts[1];
+        string version = parts[2];
+        string classifierSuffix = parts.Length > 3 ? $"-{parts[3]}" : string.Empty;
+        return $"{group}/{artifact}/{version}/{artifact}-{version}{classifierSuffix}.jar";
     }
 
     private static void ExtractNatives(string nativeJarPath, string destinationDir)

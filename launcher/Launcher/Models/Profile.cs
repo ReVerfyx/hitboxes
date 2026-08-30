@@ -1,3 +1,5 @@
+using Hitboxes.Launcher.Services;
+
 namespace Hitboxes.Launcher.Models;
 
 /// <summary>

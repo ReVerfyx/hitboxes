@@ -1,0 +1,62 @@
+buildscript {
+	repositories {
+		maven { url = "https://maven.fabricmc.net/" }
+		mavenCentral()
+		gradlePluginPortal()
+	}
+	dependencies {
+		// Exact pin, not a range: an open range like "[1.7,2.0)" resolves
+		// to whatever Maven's own <release>/<latest> tag points at, which
+		// turned out to be an unstable alpha (1.18.0-alpha.19) with a real
+		// access-widener remap bug ("Cannot remap access widener from
+		// namespace 'official'. Expected: 'intermediary'"). 1.17.20 is the
+		// latest actually-stable release per
+		// https://maven.fabricmc.net/net/fabricmc/fabric-loom/maven-metadata.xml.
+		classpath "net.fabricmc:fabric-loom:1.17.20"
+	}
+}
+
+apply plugin: "fabric-loom"
+apply plugin: "maven-publish"
+
+// The bare top-level `sourceCompatibility = ...`/`archivesBaseName = ...`
+// shorthand the 1.16.5 module uses is old Gradle convention-mapping magic
+// that Gradle 9 (needed here — see gradle-wrapper.properties) removed
+// outright ("Could not set unknown property 'sourceCompatibility'"); the
+// java {} extension block below and base {} block are the real, version-
+// stable way to set the same things.
+base {
+	archivesName = project.archives_base_name
+}
+version = project.mod_version
+group = project.maven_group
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	minecraft "com.mojang:minecraft:${project.minecraft_version}"
+	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+}
+
+processResources {
+	inputs.property "version", project.version
+
+	filesMatching("fabric.mod.json") {
+		expand "version": project.version
+	}
+}
+
+tasks.withType(JavaCompile).configureEach {
+	options.encoding = "UTF-8"
+	options.release = 21
+}
+
+java {
+	withSourcesJar()
+	sourceCompatibility = JavaVersion.VERSION_21
+	targetCompatibility = JavaVersion.VERSION_21
+}

@@ -1,0 +1,90 @@
+<Window x:Class="Hitboxes.Launcher.InstanceSettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Настройки сборки" Height="560" Width="520"
+        Background="{DynamicResource BackgroundBrush}"
+        FontFamily="{StaticResource AppFontFamily}"
+        Foreground="{DynamicResource TextPrimaryBrush}"
+        WindowStartupLocation="CenterOwner">
+
+    <Border Style="{StaticResource GlassCardStyle}" Margin="16">
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <TabControl Grid.Row="0" Background="Transparent">
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="&#9881;" FontSize="12" Margin="0,0,6,0" />
+                        <TextBlock Text="Общие" />
+                    </StackPanel>
+                </TabItem.Header>
+                <StackPanel Margin="16">
+                    <TextBlock Text="Название" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,4" />
+                    <TextBox x:Name="NameBox" Margin="0,0,0,16" />
+
+                    <TextBlock Text="Java (пусто = как в общих настройках)" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,4" />
+                    <TextBox x:Name="JavaPathBox" Margin="0,0,0,16" />
+
+                    <TextBlock Text="Память для этой сборки" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,4" />
+                    <ComboBox x:Name="MemoryOverrideBox" Margin="0,0,0,16">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Display}" />
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+
+                    <TextBlock Text="Дополнительные аргументы JVM" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,4" />
+                    <TextBox x:Name="JvmArgsBox" />
+                </StackPanel>
+            </TabItem>
+
+            <TabItem x:Name="ModsTab">
+                <TabItem.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="&#128230;" FontSize="12" Margin="0,0,6,0" />
+                        <TextBlock Text="Моды (Modrinth)" />
+                    </StackPanel>
+                </TabItem.Header>
+                <Grid Margin="16">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,8">
+                        <TextBox x:Name="ModSearchBox" Width="300" Margin="0,0,8,0" />
+                        <Button Content="Искать" Style="{StaticResource SecondaryButtonStyle}" Click="SearchMods_Click" />
+                    </StackPanel>
+
+                    <ListBox x:Name="SearchResultsList" Grid.Row="1" Height="180" DisplayMemberPath="Title" />
+                    <Button Grid.Row="1" Content="Установить выбранный" Style="{StaticResource PrimaryButtonStyle}"
+                            HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                            Margin="0,0,0,4" Click="InstallMod_Click" />
+
+                    <DockPanel Grid.Row="2" Margin="0,12,0,8">
+                        <Button DockPanel.Dock="Right" Content="Открыть папку модов"
+                                Style="{StaticResource SecondaryButtonStyle}" Click="OpenModsFolder_Click" />
+                        <TextBlock Text="Установленные моды" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center" />
+                    </DockPanel>
+                    <ListBox x:Name="InstalledModsList" Grid.Row="3" />
+                </Grid>
+            </TabItem>
+        </TabControl>
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,12,0,0">
+            <TextBlock x:Name="StatusText" VerticalAlignment="Center" Margin="0,0,12,0"
+                       Foreground="{DynamicResource TextSecondaryBrush}" />
+            <Button Content="Отмена" Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,8,0" Click="Cancel_Click" />
+            <Button Content="Сохранить" Style="{StaticResource PrimaryButtonStyle}" Click="Save_Click" />
+        </StackPanel>
+    </Grid>
+    </Border>
+</Window>

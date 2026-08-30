@@ -1,0 +1,21 @@
+{
+  "key.hitboxdebug.open_panel": "Open ReVerfyx Client Panel",
+  "category.hitboxdebug": "ReVerfyx Client",
+
+  "hitboxdebug.panel.title": "ReVerfyx Client — Singleplayer / Local World Only",
+  "hitboxdebug.panel.warning": "These tools automate gameplay. They disable themselves whenever another real player is nearby.",
+  "hitboxdebug.panel.autofarm_mobs": "Auto-farm mobs (animals only)",
+  "hitboxdebug.panel.hitbox_visualizer": "Show mob hitboxes",
+  "hitboxdebug.panel.hitbox_expand": "Enlarge mob hitboxes (never players)",
+  "hitboxdebug.panel.autoeat": "Auto-eat golden/enchanted apples",
+  "hitboxdebug.panel.farmbuilder": "Auto farm builder",
+  "hitboxdebug.panel.farmbuilder.select": "Select blueprint",
+  "hitboxdebug.panel.farmbuilder.start": "Start building (place two corners first)",
+  "hitboxdebug.panel.farmbuilder.stop": "Stop",
+
+  "hitboxdebug.message.players_nearby": "Automation paused: another player is nearby.",
+  "hitboxdebug.message.builder_need_corners": "Set two corner positions first (use the wand item).",
+  "hitboxdebug.message.builder_progress": "Farm builder: %s / %s blocks placed",
+  "hitboxdebug.message.builder_done": "Farm builder: done.",
+  "hitboxdebug.message.builder_missing_items": "Farm builder: paused, missing item %s in inventory."
+}

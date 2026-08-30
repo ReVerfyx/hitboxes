@@ -1,0 +1,229 @@
+name: Build ReVerfyx Client
+
+on:
+  push:
+    branches: [main, redux]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build-mod:
+    name: ReVerfyx Client mod (${{ matrix.mc_version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # 1.16.5: old Loom 0.10.x branch, needs Java 8 bytecode and is
+          # happy on JDK 17. 1.21.4: modern Loom (pinned to 1.17.20 — see
+          # mod/1.21.4/build.gradle) needs JDK 25 to run its own toolchain,
+          # separate from the JDK 21 bytecode it actually compiles the
+          # mod's classes to (sourceCompatibility/targetCompatibility).
+          - mc_version: "1.16.5"
+            java_version: "17"
+          - mc_version: "1.21.4"
+            java_version: "25"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ matrix.java_version }}
+      - name: Grant execute permission
+        run: chmod +x mod/${{ matrix.mc_version }}/gradlew
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+      - name: Build mod
+        working-directory: mod/${{ matrix.mc_version }}
+        run: ./gradlew build --no-daemon
+      - name: Upload mod
+        uses: actions/upload-artifact@v4
+        with:
+          name: reverfyx-client-mod-${{ matrix.mc_version }}
+          path: mod/${{ matrix.mc_version }}/build/libs/*.jar
+          if-no-files-found: error
+
+  build-launcher:
+    name: ReVerfyx Launcher (.exe)
+    runs-on: windows-latest
+    needs: build-mod
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+      - name: Restore
+        run: dotnet restore launcher/Launcher.sln
+      - name: Build
+        run: dotnet build launcher/Launcher.sln --configuration Release --no-restore
+      - name: Publish self-contained Windows executable
+        run: >
+          dotnet publish launcher/Launcher/Launcher.csproj
+          --configuration Release
+          --runtime win-x64
+          --self-contained true
+          --output publish
+          -p:PublishSingleFile=true
+          -p:IncludeNativeLibrariesForSelfExtract=true
+          -p:EnableCompressionInSingleFile=true
+      - name: Download mod artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: reverfyx-client-mod-*
+          path: mod-artifacts
+      - name: Bundle mod
+        shell: pwsh
+        run: |
+          # One jar per supported Minecraft version, named
+          # "ReVerfyxClient-<mcversion>.jar" — BundledModService (launcher)
+          # and Package.wxs (installer) both key off that exact naming to
+          # pick/ship the jar matching an instance's own game version,
+          # instead of installing a single fixed-version jar into every
+          # instance regardless of whether it actually matches.
+          New-Item -ItemType Directory -Force -Path publish\bundled-mod | Out-Null
+          Get-ChildItem mod-artifacts -Directory | ForEach-Object {
+            $mcVersion = $_.Name -replace '^reverfyx-client-mod-', ''
+            # Loom's `build` produces THREE jars per module: the plain
+            # "<name>-<version>.jar" (remapped to intermediary — the only
+            # one that actually runs against a production Minecraft jar),
+            # "-sources.jar", and "-dev.jar" (unmapped/named — for IDE/dev
+            # runs only, references Yarn class names like
+            # net.minecraft.entity.Entity that don't exist at runtime and
+            # crash instantly with ClassNotFoundException). Must exclude
+            # both, not just -sources: alphabetically "-dev.jar" sorts
+            # before the plain jar ('-' < '.'), so an unfiltered
+            # Select-Object -First 1 was silently shipping the dev jar.
+            $modJar = Get-ChildItem $_.FullName -Filter *.jar |
+              Where-Object { $_.Name -notlike '*-sources.jar' -and $_.Name -notlike '*-dev.jar' } |
+              Select-Object -First 1
+            if (-not $modJar) {
+              Write-Host "##[error]No jar found for mc version $mcVersion in $($_.FullName)."
+              exit 1
+            }
+            Copy-Item $modJar.FullName -Destination (Join-Path publish\bundled-mod "ReVerfyxClient-$mcVersion.jar") -Force
+          }
+
+      - name: Capture UI screenshots
+        shell: pwsh
+        run: |
+          # The exe's window-compositing path has turned out to be flaky on
+          # this specific CI VM (crash point moves between runs). Retry the
+          # whole process a few times and keep whichever attempt actually
+          # produced PNGs. Start-Process -Wait blocks until this
+          # non-console ("Windows" subsystem) exe really exits — plain
+          # `& .\exe args` does not reliably do that.
+          $maxAttempts = 5
+          for ($i = 1; $i -le $maxAttempts; $i++) {
+            Write-Host "--- capture attempt $i/$maxAttempts ---"
+            Get-Process ReVerfyxClientLauncher -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+            Remove-Item -Path screenshots -Recurse -Force -ErrorAction SilentlyContinue
+            $proc = Start-Process -FilePath ".\publish\ReVerfyxClientLauncher.exe" `
+              -ArgumentList "--capture-screenshots", "${{ github.workspace }}\screenshots" `
+              -Wait -PassThru -NoNewWindow
+            Write-Host "exit code: $($proc.ExitCode)"
+            $pngCount = (Get-ChildItem -Path screenshots -Filter *.png -ErrorAction SilentlyContinue | Measure-Object).Count
+            Write-Host "PNGs produced: $pngCount"
+            if ($pngCount -gt 0) {
+              break
+            }
+          }
+          if ($pngCount -eq 0) {
+            Write-Host "##[error]No screenshots were produced after $maxAttempts attempts — failing so this shows up as a real CI failure instead of silently passing."
+            exit 1
+          }
+
+      - name: Print harness log
+        if: always()
+        shell: pwsh
+        run: |
+          Write-Host "--- screenshots dir listing ---"
+          Get-ChildItem -Path screenshots -ErrorAction SilentlyContinue | Format-Table Name, Length
+          Write-Host "--- harness.log ---"
+          Get-Content -Path screenshots\harness.log -ErrorAction SilentlyContinue
+          Write-Host "--- crash.log ---"
+          Get-Content -Path screenshots\crash.log -ErrorAction SilentlyContinue
+
+      - name: Upload screenshots
+        uses: actions/upload-artifact@v4
+        with:
+          name: reverfyx-client-launcher-screenshots
+          path: screenshots/
+          if-no-files-found: warn
+
+      - name: Upload ready-to-run EXE
+        uses: actions/upload-artifact@v4
+        with:
+          name: ReVerfyx-Launcher-Windows-x64
+          path: publish/ReVerfyxClientLauncher.exe
+          if-no-files-found: error
+      - name: Upload launcher bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: ReVerfyx-Launcher-Bundle-Windows-x64
+          path: publish/
+          if-no-files-found: error
+
+      - name: Build MSI package
+        run: dotnet build installer\Package\Package.wixproj --configuration Release
+
+      - name: Locate built MSI
+        shell: pwsh
+        run: |
+          $msi = Get-ChildItem -Path installer\Package\bin -Recurse -Filter *.msi | Select-Object -First 1
+          if (-not $msi) {
+            Write-Host "##[error]No MSI was produced by the WiX package build."
+            exit 1
+          }
+          Copy-Item $msi.FullName -Destination installer\Package\ReVerfyxClientLauncher.msi -Force
+          Write-Host "MSI at: $($msi.FullName)"
+
+      - name: Build Setup.exe (WiX bundle)
+        run: dotnet build installer\Bundle\Bundle.wixproj --configuration Release
+
+      - name: Locate built Setup.exe
+        shell: pwsh
+        run: |
+          $exe = Get-ChildItem -Path installer\Bundle\bin -Recurse -Filter *.exe | Select-Object -First 1
+          if (-not $exe) {
+            Write-Host "##[error]No installer exe was produced by the WiX bundle build."
+            exit 1
+          }
+          Copy-Item $exe.FullName -Destination "ReVerfyxClientLauncherSetup.exe" -Force
+          Write-Host "Setup.exe at: $($exe.FullName)"
+
+      - name: Validate installer (silent install + uninstall)
+        shell: pwsh
+        run: |
+          $installLog = "$env:RUNNER_TEMP\install.log"
+          Start-Process -FilePath ".\ReVerfyxClientLauncherSetup.exe" `
+            -ArgumentList "/quiet", "/norestart", "/log", $installLog -Wait -PassThru | Out-Null
+
+          $installedExe = "$env:ProgramFiles\ReVerfyx Client Launcher\ReVerfyxClientLauncher.exe"
+          $installedJar116 = "$env:ProgramFiles\ReVerfyx Client Launcher\bundled-mod\ReVerfyxClient-1.16.5.jar"
+          $installedJar1214 = "$env:ProgramFiles\ReVerfyx Client Launcher\bundled-mod\ReVerfyxClient-1.21.4.jar"
+          if (-not (Test-Path $installedExe) -or -not (Test-Path $installedJar116) -or -not (Test-Path $installedJar1214)) {
+            Write-Host "##[error]Installer did not place the launcher/mod jars where expected."
+            Get-Content $installLog -ErrorAction SilentlyContinue | Select-Object -Last 300
+            exit 1
+          }
+          Write-Host "Installed OK: $installedExe"
+
+          $uninstallLog = "$env:RUNNER_TEMP\uninstall.log"
+          Start-Process -FilePath ".\ReVerfyxClientLauncherSetup.exe" `
+            -ArgumentList "/uninstall", "/quiet", "/norestart", "/log", $uninstallLog -Wait -PassThru | Out-Null
+
+          if (Test-Path $installedExe) {
+            Write-Host "##[error]Uninstall did not remove the launcher exe."
+            Get-Content $uninstallLog -ErrorAction SilentlyContinue | Select-Object -Last 300
+            exit 1
+          }
+          Write-Host "Uninstalled OK."
+
+      - name: Upload installer (Setup.exe)
+        uses: actions/upload-artifact@v4
+        with:
+          name: ReVerfyx-Launcher-Setup
+          path: ReVerfyxClientLauncherSetup.exe
+          if-no-files-found: error

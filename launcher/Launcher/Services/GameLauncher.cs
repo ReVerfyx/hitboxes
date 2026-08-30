@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.IO;
 using System.Text;
 using System.Text.Json;
 using Hitboxes.Launcher.Models;
@@ -14,17 +15,15 @@ namespace Hitboxes.Launcher.Services;
 public sealed class GameLauncher
 {
     private readonly string _rootDir;
-    private readonly string _javaExecutable;
 
-    public GameLauncher(string rootDir, string javaExecutable = "javaw")
+    public GameLauncher(string rootDir)
     {
         _rootDir = rootDir;
-        _javaExecutable = javaExecutable;
     }
 
-    public Process Launch(InstalledVersion installed, Profile profile)
+    public Process Launch(InstalledVersion installed, Profile profile, Instance instance,
+        LauncherSettings settings, string gameDir)
     {
-        string gameDir = Path.Combine(_rootDir, "instances", installed.Detail.Id);
         Directory.CreateDirectory(gameDir);
 
         string classpath = string.Join(Path.PathSeparator, installed.ClasspathEntries);
@@ -39,38 +38,60 @@ public sealed class GameLauncher
             ["auth_uuid"] = profile.OfflineUuid.ToString("N"),
             ["auth_access_token"] = "0",
             ["user_type"] = "legacy",
-            ["version_type"] = "hitboxes-launcher",
+            ["version_type"] = "reverfyx-client-launcher",
             ["natives_directory"] = installed.NativesDir,
-            ["launcher_name"] = "hitboxes-launcher",
+            ["launcher_name"] = "reverfyx-client-launcher",
             ["launcher_version"] = "0.1.0",
             ["classpath"] = classpath,
         };
 
+        int memMin = instance.MemoryMinMb ?? settings.DefaultMemoryMinMb;
+        int memMax = instance.MemoryMaxMb ?? settings.DefaultMemoryMaxMb;
+        string extraJvmArgs = instance.ExtraJvmArgs ?? settings.DefaultJvmArgs;
+        string javaExecutable = instance.JavaExecutableOverride ?? settings.JavaExecutable;
+
         var args = new List<string>();
-        args.AddRange(BuildJvmArgs(installed.Detail, substitutions));
+        args.AddRange(BuildJvmArgs(installed.Detail, substitutions, memMin, memMax, extraJvmArgs));
         args.Add(installed.Detail.MainClass);
         args.AddRange(BuildGameArgs(installed.Detail, substitutions));
 
         var psi = new ProcessStartInfo
         {
-            FileName = _javaExecutable,
+            FileName = javaExecutable,
             WorkingDirectory = gameDir,
             UseShellExecute = false,
+            // javaw has no console window at all — without redirecting
+            // output, a crash before Minecraft's own logging even starts
+            // (bad natives, wrong Java version, classpath issue) is
+            // completely invisible: no window, no error, nothing. Capture
+            // it so LaunchLogService can write it somewhere a user can
+            // actually find after "nothing happened".
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
         };
         foreach (var arg in args)
         {
             psi.ArgumentList.Add(arg);
         }
 
-        return Process.Start(psi) ?? throw new InvalidOperationException("Failed to start Java process.");
+        var process = Process.Start(psi) ?? throw new InvalidOperationException("Failed to start Java process.");
+        LaunchLogService.Attach(process, _rootDir, instance.Id);
+        return process;
     }
 
-    private static IEnumerable<string> BuildJvmArgs(VersionDetail detail, Dictionary<string, string> subs)
+    private static IEnumerable<string> BuildJvmArgs(VersionDetail detail, Dictionary<string, string> subs,
+        int memMinMb, int memMaxMb, string extraJvmArgs)
     {
         yield return $"-Djava.library.path={subs["natives_directory"]}";
-        yield return "-Xmx2G";
+        yield return $"-Xms{memMinMb}M";
+        yield return $"-Xmx{memMaxMb}M";
         yield return "-cp";
         yield return subs["classpath"];
+
+        foreach (var extra in extraJvmArgs.Split(' ', StringSplitOptions.RemoveEmptyEntries))
+        {
+            yield return extra;
+        }
 
         if (detail.Arguments is null)
         {

@@ -7,11 +7,19 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>Hitboxes.Launcher</RootNamespace>
-    <AssemblyName>HitboxesLauncher</AssemblyName>
+    <AssemblyName>ReVerfyxClientLauncher</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="System.Text.Json" Version="8.0.4" />
+    <PackageReference Include="NAudio" Version="2.2.1" />
+    <PackageReference Include="NAudio.Vorbis" Version="1.5.0" />
+  </ItemGroup>
+
+  <!-- "Press Start 2P" (SIL Open Font License, Google Fonts) — a pixel-style
+       display font used for the logo/headers/CTA buttons. Free to embed. -->
+  <ItemGroup>
+    <Resource Include="Assets\Fonts\PressStart2P-Regular.ttf" />
   </ItemGroup>
 
 </Project>

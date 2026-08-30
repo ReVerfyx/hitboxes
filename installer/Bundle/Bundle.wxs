@@ -1,0 +1,18 @@
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
+     xmlns:bal="http://wixtoolset.org/schemas/v4/wxs/bal">
+  <Bundle Name="ReVerfyx Client Launcher"
+          Manufacturer="ReVerfyx"
+          Version="1.0.0"
+          UpgradeCode="8a2d6e9f-4c1b-4f3a-9e2c-000000000003">
+
+    <BootstrapperApplication>
+      <bal:WixStandardBootstrapperApplication
+        Theme="hyperlinkLicense"
+        LicenseUrl="https://github.com/ReVerfyx/hitboxes" />
+    </BootstrapperApplication>
+
+    <Chain>
+      <MsiPackage SourceFile="..\Package\ReVerfyxClientLauncher.msi" />
+    </Chain>
+  </Bundle>
+</Wix>
