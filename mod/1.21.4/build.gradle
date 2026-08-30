@@ -19,11 +19,15 @@ buildscript {
 apply plugin: "fabric-loom"
 apply plugin: "maven-publish"
 
-// Minecraft 1.21.4 requires Java 21 at runtime; compile to match.
-sourceCompatibility = JavaVersion.VERSION_21
-targetCompatibility = JavaVersion.VERSION_21
-
-archivesBaseName = project.archives_base_name
+// The bare top-level `sourceCompatibility = ...`/`archivesBaseName = ...`
+// shorthand the 1.16.5 module uses is old Gradle convention-mapping magic
+// that Gradle 9 (needed here — see gradle-wrapper.properties) removed
+// outright ("Could not set unknown property 'sourceCompatibility'"); the
+// java {} extension block below and base {} block are the real, version-
+// stable way to set the same things.
+base {
+	archivesName = project.archives_base_name
+}
 version = project.mod_version
 group = project.maven_group
 
@@ -48,8 +52,11 @@ processResources {
 
 tasks.withType(JavaCompile).configureEach {
 	options.encoding = "UTF-8"
+	options.release = 21
 }
 
 java {
 	withSourcesJar()
+	sourceCompatibility = JavaVersion.VERSION_21
+	targetCompatibility = JavaVersion.VERSION_21
 }
