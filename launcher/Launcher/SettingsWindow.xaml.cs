@@ -37,10 +37,10 @@ public partial class SettingsWindow : Window
 
         JavaPathBox.Text = current.JavaExecutable;
         JvmArgsBox.Text = current.DefaultJvmArgs;
-        MemoryBox.ItemsSource = BuildMemoryOptionsGb();
+        var memoryOptionsGb = BuildMemoryOptionsGb();
+        MemoryBox.ItemsSource = memoryOptionsGb;
         int selectedGb = Math.Max(4, (int)Math.Ceiling(current.DefaultMemoryMaxMb / 1024.0));
-        MemoryBox.SelectedItem = BuildMemoryOptionsGb().FirstOrDefault(v => v == selectedGb)
-            ?? BuildMemoryOptionsGb().FirstOrDefault();
+        MemoryBox.SelectedItem = memoryOptionsGb.Contains(selectedGb) ? selectedGb : memoryOptionsGb.FirstOrDefault();
 
         MusicEnabledBox.IsChecked = current.MainMenuMusicEnabled;
         MusicVolumeSlider.Value = current.MainMenuMusicVolume;
