@@ -35,6 +35,16 @@ jobs:
         run: chmod +x mod/${{ matrix.mc_version }}/gradlew
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
+        with:
+          # The 1.21.4 leg hit the same "Cannot remap access widener from
+          # namespace 'official'. Expected: 'intermediary'" failure across
+          # multiple different Loom versions/pins — the shared Gradle home
+          # cache (this action's own restore/save) can carry forward Loom's
+          # internal Minecraft-setup cache from an earlier attempt, so a
+          # corrupted entry from the very first (alpha-Loom) run may have
+          # been silently reused ever since. Disable caching here to rule
+          # that out and force a clean setup each time.
+          cache-disabled: true
       - name: Build mod
         working-directory: mod/${{ matrix.mc_version }}
         run: ./gradlew build --no-daemon
