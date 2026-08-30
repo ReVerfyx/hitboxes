@@ -15,11 +15,10 @@ jobs:
       matrix:
         include:
           # 1.16.5: old Loom 0.10.x branch, needs Java 8 bytecode and is
-          # happy on JDK 17. 1.21.4: modern Loom resolved from a [1.7,2.0)
-          # range — the latest matching build's own toolchain requires
-          # JDK 25 to run (separate from the JDK 21 bytecode it actually
-          # compiles the mod's classes to, which build.gradle pins via
-          # sourceCompatibility/targetCompatibility).
+          # happy on JDK 17. 1.21.4: modern Loom (pinned to 1.17.20 — see
+          # mod/1.21.4/build.gradle) needs JDK 25 to run its own toolchain,
+          # separate from the JDK 21 bytecode it actually compiles the
+          # mod's classes to (sourceCompatibility/targetCompatibility).
           - mc_version: "1.16.5"
             java_version: "17"
           - mc_version: "1.21.4"
@@ -35,23 +34,9 @@ jobs:
         run: chmod +x mod/${{ matrix.mc_version }}/gradlew
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
-        with:
-          # The 1.21.4 leg hit the same "Cannot remap access widener from
-          # namespace 'official'. Expected: 'intermediary'" failure across
-          # multiple different Loom versions/pins — the shared Gradle home
-          # cache (this action's own restore/save) can carry forward Loom's
-          # internal Minecraft-setup cache from an earlier attempt, so a
-          # corrupted entry from the very first (alpha-Loom) run may have
-          # been silently reused ever since. Disable caching here to rule
-          # that out and force a clean setup each time.
-          cache-disabled: true
       - name: Build mod
         working-directory: mod/${{ matrix.mc_version }}
-        # --stacktrace on the 1.21.4 leg only: an access-widener remap
-        # error survives across Loom pins/fabric-api-loader versions/cache
-        # states, so the next step is seeing exactly which component
-        # triggers it instead of guessing again.
-        run: ./gradlew build --no-daemon ${{ matrix.mc_version == '1.21.4' && '--stacktrace' || '' }}
+        run: ./gradlew build --no-daemon
       - name: Upload mod
         uses: actions/upload-artifact@v4
         with:
