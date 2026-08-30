@@ -53,7 +53,8 @@ public partial class SettingsWindow : Window
         Loaded += (_, _) => UiAnimations.FadeIn(this);
     }
 
-    private static List<int> BuildMemoryOptionsGb()
+    /// <summary>Shared with InstanceSettingsWindow's per-instance memory override.</summary>
+    internal static List<int> BuildMemoryOptionsGb()
     {
         var status = new MemoryStatusEx { Length = (uint)Marshal.SizeOf<MemoryStatusEx>() };
         ulong totalBytes = GlobalMemoryStatusEx(ref status) ? status.TotalPhys : 16UL * 1024 * 1024 * 1024;

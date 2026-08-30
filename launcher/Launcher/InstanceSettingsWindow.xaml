@@ -23,11 +23,14 @@
                     <TextBlock Text="Java (пусто = как в общих настройках)" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,4" />
                     <TextBox x:Name="JavaPathBox" Margin="0,0,0,16" />
 
-                    <TextBlock Text="Память, МБ (мин / макс, пусто = по умолчанию)" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,4" />
-                    <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
-                        <TextBox x:Name="MemMinBox" Width="90" Margin="0,0,8,0" />
-                        <TextBox x:Name="MemMaxBox" Width="90" />
-                    </StackPanel>
+                    <TextBlock Text="Память для этой сборки" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,4" />
+                    <ComboBox x:Name="MemoryOverrideBox" Margin="0,0,0,16">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Display}" />
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
 
                     <TextBlock Text="Дополнительные аргументы JVM" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,4" />
                     <TextBox x:Name="JvmArgsBox" />

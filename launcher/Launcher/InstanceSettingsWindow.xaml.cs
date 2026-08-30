@@ -8,6 +8,9 @@ namespace Hitboxes.Launcher;
 
 public partial class InstanceSettingsWindow : Window
 {
+    /// <summary>One entry in MemoryOverrideBox — Gb is null for "use the global default".</summary>
+    private sealed record MemoryOption(int? Gb, string Display);
+
     private readonly Instance _instance;
     private readonly InstanceService _instanceService;
     private readonly ModrinthService _modrinthService = new();
@@ -21,8 +24,13 @@ public partial class InstanceSettingsWindow : Window
 
         NameBox.Text = instance.Name;
         JavaPathBox.Text = instance.JavaExecutableOverride ?? string.Empty;
-        MemMinBox.Text = instance.MemoryMinMb?.ToString() ?? string.Empty;
-        MemMaxBox.Text = instance.MemoryMaxMb?.ToString() ?? string.Empty;
+
+        var memoryOptions = new List<MemoryOption> { new(null, "Как в общих настройках") };
+        memoryOptions.AddRange(SettingsWindow.BuildMemoryOptionsGb().Select(gb => new MemoryOption(gb, $"{gb} ГБ")));
+        MemoryOverrideBox.ItemsSource = memoryOptions;
+        int? currentGb = instance.MemoryMaxMb is { } mb ? (int)Math.Ceiling(mb / 1024.0) : null;
+        MemoryOverrideBox.SelectedItem = memoryOptions.FirstOrDefault(o => o.Gb == currentGb) ?? memoryOptions[0];
+
         JvmArgsBox.Text = instance.ExtraJvmArgs ?? string.Empty;
 
         ModsTab.IsEnabled = instance.Loader == ModLoader.Fabric;
@@ -93,8 +101,9 @@ public partial class InstanceSettingsWindow : Window
     {
         _instance.Name = string.IsNullOrWhiteSpace(NameBox.Text) ? _instance.Name : NameBox.Text.Trim();
         _instance.JavaExecutableOverride = string.IsNullOrWhiteSpace(JavaPathBox.Text) ? null : JavaPathBox.Text.Trim();
-        _instance.MemoryMinMb = int.TryParse(MemMinBox.Text, out int min) ? min : null;
-        _instance.MemoryMaxMb = int.TryParse(MemMaxBox.Text, out int max) ? max : null;
+        int? overrideGb = (MemoryOverrideBox.SelectedItem as MemoryOption)?.Gb;
+        _instance.MemoryMinMb = null; // no per-instance min override in the UI — always falls back to the global default
+        _instance.MemoryMaxMb = overrideGb is { } gb ? gb * 1024 : null;
         _instance.ExtraJvmArgs = string.IsNullOrWhiteSpace(JvmArgsBox.Text) ? null : JvmArgsBox.Text.Trim();
 
         _instanceService.Save(_instance);
