@@ -127,3 +127,17 @@ jobs:
           name: ReVerfyx-Launcher-Bundle-Windows-x64
           path: publish/
           if-no-files-found: error
+
+      - name: Print PNGs as base64 (artifact zip isn't fetchable from outside Actions; temporary, for retrieval)
+        if: always()
+        shell: pwsh
+        run: |
+          Get-ChildItem -Path screenshots -Filter *.png -ErrorAction SilentlyContinue | ForEach-Object {
+            Write-Host "=====BEGIN-PNG-BASE64 $($_.Name)====="
+            $b64 = [Convert]::ToBase64String([IO.File]::ReadAllBytes($_.FullName))
+            for ($i = 0; $i -lt $b64.Length; $i += 4000) {
+              Write-Host $b64.Substring($i, [Math]::Min(4000, $b64.Length - $i))
+              Start-Sleep -Milliseconds 50
+            }
+            Write-Host "=====END-PNG-BASE64 $($_.Name)====="
+          }
