@@ -6,7 +6,9 @@
           UpgradeCode="8a2d6e9f-4c1b-4f3a-9e2c-000000000003">
 
     <BootstrapperApplication>
-      <bal:WixStandardBootstrapperApplication Theme="none" />
+      <bal:WixStandardBootstrapperApplication
+        Theme="hyperlinkLicense"
+        LicenseUrl="https://github.com/ReVerfyx/hitboxes" />
     </BootstrapperApplication>
 
     <Chain>
