@@ -3,8 +3,7 @@
            Manufacturer="ReVerfyx"
            Version="1.0.0"
            UpgradeCode="5b1f6b9a-6f0e-4d3a-9c1f-2b7e2b6a0f3e"
-           Scope="perMachine"
-           Platform="x64">
+           Scope="perMachine">
 
     <MajorUpgrade DowngradeErrorMessage="Уже установлена более новая версия [ProductName]." />
     <MediaTemplate EmbedCab="yes" />

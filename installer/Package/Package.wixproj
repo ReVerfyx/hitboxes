@@ -2,5 +2,6 @@
   <PropertyGroup>
     <OutputName>ReVerfyxClientLauncher</OutputName>
     <OutputType>Package</OutputType>
+    <Platform>x64</Platform>
   </PropertyGroup>
 </Project>
