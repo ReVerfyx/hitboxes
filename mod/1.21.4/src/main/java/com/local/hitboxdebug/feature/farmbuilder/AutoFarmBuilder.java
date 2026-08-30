@@ -6,7 +6,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.Text;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
@@ -76,7 +76,7 @@ public final class AutoFarmBuilder {
 		}
 
 		if (stepIndex >= activeBlueprint.steps.size()) {
-			player.sendMessage(new TranslatableText("hitboxdebug.message.builder_done"), false);
+			player.sendMessage(Text.translatable("hitboxdebug.message.builder_done"), false);
 			activeBlueprint = null;
 			return;
 		}
@@ -94,7 +94,7 @@ public final class AutoFarmBuilder {
 
 		Hand hand = findItemHand(player, step.item());
 		if (hand == null) {
-			player.sendMessage(new TranslatableText("hitboxdebug.message.builder_missing_items",
+			player.sendMessage(Text.translatable("hitboxdebug.message.builder_missing_items",
 					step.item().getName().getString()), false);
 			return;
 		}
@@ -105,7 +105,7 @@ public final class AutoFarmBuilder {
 		}
 
 		BlockHitResult hitResult = new BlockHitResult(Vec3d.ofCenter(targetPos), side, targetPos, false);
-		client.interactionManager.interactBlock(player, client.world, hand, hitResult);
+		client.interactionManager.interactBlock(player, hand, hitResult);
 		player.swingHand(hand);
 
 		stepIndex++;
@@ -123,9 +123,9 @@ public final class AutoFarmBuilder {
 				return hand;
 			}
 		}
-		for (int i = 0; i < player.inventory.main.size(); i++) {
-			if (player.inventory.main.get(i).getItem() == item) {
-				player.inventory.selectedSlot = Math.min(i, 8);
+		for (int i = 0; i < player.getInventory().main.size(); i++) {
+			if (player.getInventory().main.get(i).getItem() == item) {
+				player.getInventory().selectedSlot = Math.min(i, 8);
 				return Hand.MAIN_HAND;
 			}
 		}

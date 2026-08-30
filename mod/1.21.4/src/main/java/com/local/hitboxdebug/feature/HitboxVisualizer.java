@@ -6,7 +6,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.render.WorldRenderer;
+import net.minecraft.client.render.VertexRendering;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -51,7 +51,7 @@ public final class HitboxVisualizer {
 		for (Entity entity : client.world.getEntitiesByClass(Entity.class, searchBox,
 				e -> !(e instanceof PlayerEntity) && e.isAlive())) {
 			Box box = entity.getBoundingBox().offset(-camera.x, -camera.y, -camera.z);
-			WorldRenderer.drawBox(matrices, buffer, box, 1.0f, 0.4f, 0.1f, 0.8f);
+			VertexRendering.drawBox(matrices, buffer, box, 1.0f, 0.4f, 0.1f, 0.8f);
 		}
 	}
 }

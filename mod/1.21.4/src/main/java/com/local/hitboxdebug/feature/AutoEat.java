@@ -44,7 +44,7 @@ public final class AutoEat {
 			return;
 		}
 
-		client.options.keyUse.setPressed(true);
+		client.options.useKey.setPressed(true);
 		player.setCurrentHand(hand);
 	}
 
