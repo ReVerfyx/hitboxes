@@ -81,6 +81,10 @@ public partial class MainWindow : Window
             {
                 SettingsButton_Click(this, new RoutedEventArgs());
             }
+            else if (ScreenshotInitialView == "Instances")
+            {
+                InstancesButton_Click(this, new RoutedEventArgs());
+            }
             if (App.ScreenshotMode) ScreenshotHarness.Log("MainWindow.Loaded: handler exiting.");
         };
         Closed += (_, _) => _musicService.Dispose();
