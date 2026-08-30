@@ -85,8 +85,18 @@ jobs:
           New-Item -ItemType Directory -Force -Path publish\bundled-mod | Out-Null
           Get-ChildItem mod-artifacts -Directory | ForEach-Object {
             $mcVersion = $_.Name -replace '^reverfyx-client-mod-', ''
+            # Loom's `build` produces THREE jars per module: the plain
+            # "<name>-<version>.jar" (remapped to intermediary — the only
+            # one that actually runs against a production Minecraft jar),
+            # "-sources.jar", and "-dev.jar" (unmapped/named — for IDE/dev
+            # runs only, references Yarn class names like
+            # net.minecraft.entity.Entity that don't exist at runtime and
+            # crash instantly with ClassNotFoundException). Must exclude
+            # both, not just -sources: alphabetically "-dev.jar" sorts
+            # before the plain jar ('-' < '.'), so an unfiltered
+            # Select-Object -First 1 was silently shipping the dev jar.
             $modJar = Get-ChildItem $_.FullName -Filter *.jar |
-              Where-Object { $_.Name -notlike '*-sources.jar' } |
+              Where-Object { $_.Name -notlike '*-sources.jar' -and $_.Name -notlike '*-dev.jar' } |
               Select-Object -First 1
             if (-not $modJar) {
               Write-Host "##[error]No jar found for mc version $mcVersion in $($_.FullName)."
