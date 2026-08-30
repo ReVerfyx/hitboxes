@@ -1,0 +1,55 @@
+buildscript {
+	repositories {
+		maven { url = "https://maven.fabricmc.net/" }
+		mavenCentral()
+		gradlePluginPortal()
+	}
+	dependencies {
+		// A range instead of an exact patch pin — same reasoning as the
+		// 1.16.5 module's fabric_version range: avoids guessing an exact
+		// published Loom version that might not exist, letting Gradle
+		// resolve the latest real 1.7.x/1.8.x/etc. build from Fabric's own
+		// Maven metadata at build time. The plugins{} DSL requires an exact
+		// version string, so this legacy buildscript+apply-plugin form is
+		// used instead specifically to allow a range here.
+		classpath "net.fabricmc:fabric-loom:[1.7,2.0)"
+	}
+}
+
+apply plugin: "fabric-loom"
+apply plugin: "maven-publish"
+
+// Minecraft 1.21.4 requires Java 21 at runtime; compile to match.
+sourceCompatibility = JavaVersion.VERSION_21
+targetCompatibility = JavaVersion.VERSION_21
+
+archivesBaseName = project.archives_base_name
+version = project.mod_version
+group = project.maven_group
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	minecraft "com.mojang:minecraft:${project.minecraft_version}"
+	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+}
+
+processResources {
+	inputs.property "version", project.version
+
+	filesMatching("fabric.mod.json") {
+		expand "version": project.version
+	}
+}
+
+tasks.withType(JavaCompile).configureEach {
+	options.encoding = "UTF-8"
+}
+
+java {
+	withSourcesJar()
+}

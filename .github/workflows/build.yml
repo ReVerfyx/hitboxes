@@ -8,27 +8,38 @@ on:
 
 jobs:
   build-mod:
-    name: ReVerfyx Client mod
+    name: ReVerfyx Client mod (${{ matrix.mc_version }})
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # 1.16.5: old Loom 0.10.x branch, needs Java 8 bytecode and is
+          # happy on JDK 17. 1.21.4: modern Loom, requires JDK 21 (the
+          # same minimum Mojang requires to run 1.21.4 itself).
+          - mc_version: "1.16.5"
+            java_version: "17"
+          - mc_version: "1.21.4"
+            java_version: "21"
     steps:
       - uses: actions/checkout@v4
       - name: Setup JDK
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: "17"
+          java-version: ${{ matrix.java_version }}
       - name: Grant execute permission
-        run: chmod +x mod/gradlew
+        run: chmod +x mod/${{ matrix.mc_version }}/gradlew
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
       - name: Build mod
-        working-directory: mod
+        working-directory: mod/${{ matrix.mc_version }}
         run: ./gradlew build --no-daemon
       - name: Upload mod
         uses: actions/upload-artifact@v4
         with:
-          name: reverfyx-client-mod
-          path: mod/build/libs/*.jar
+          name: reverfyx-client-mod-${{ matrix.mc_version }}
+          path: mod/${{ matrix.mc_version }}/build/libs/*.jar
           if-no-files-found: error
 
   build-launcher:
@@ -55,25 +66,31 @@ jobs:
           -p:PublishSingleFile=true
           -p:IncludeNativeLibrariesForSelfExtract=true
           -p:EnableCompressionInSingleFile=true
-      - name: Download mod artifact
+      - name: Download mod artifacts
         uses: actions/download-artifact@v4
         with:
-          name: reverfyx-client-mod
-          path: mod-artifact
+          pattern: reverfyx-client-mod-*
+          path: mod-artifacts
       - name: Bundle mod
         shell: pwsh
         run: |
+          # One jar per supported Minecraft version, named
+          # "ReVerfyxClient-<mcversion>.jar" — BundledModService (launcher)
+          # and Package.wxs (installer) both key off that exact naming to
+          # pick/ship the jar matching an instance's own game version,
+          # instead of installing a single fixed-version jar into every
+          # instance regardless of whether it actually matches.
           New-Item -ItemType Directory -Force -Path publish\bundled-mod | Out-Null
-          Get-ChildItem mod-artifact\*.jar |
-            Where-Object { $_.Name -notlike '*-sources.jar' } |
-            Copy-Item -Destination publish\bundled-mod
-          # Fixed filename for the installer (Package.wxs references it by
-          # name — the real jar name carries the mod version and would
-          # otherwise change every release).
-          $modJar = Get-ChildItem publish\bundled-mod\*.jar | Select-Object -First 1
-          $fixedNamePath = Join-Path publish\bundled-mod "ReVerfyxClient.jar"
-          if ($modJar.FullName -ne (Resolve-Path $fixedNamePath -ErrorAction SilentlyContinue)) {
-            Copy-Item $modJar.FullName -Destination $fixedNamePath -Force
+          Get-ChildItem mod-artifacts -Directory | ForEach-Object {
+            $mcVersion = $_.Name -replace '^reverfyx-client-mod-', ''
+            $modJar = Get-ChildItem $_.FullName -Filter *.jar |
+              Where-Object { $_.Name -notlike '*-sources.jar' } |
+              Select-Object -First 1
+            if (-not $modJar) {
+              Write-Host "##[error]No jar found for mc version $mcVersion in $($_.FullName)."
+              exit 1
+            }
+            Copy-Item $modJar.FullName -Destination (Join-Path publish\bundled-mod "ReVerfyxClient-$mcVersion.jar") -Force
           }
 
       - name: Capture UI screenshots
@@ -172,9 +189,10 @@ jobs:
             -ArgumentList "/quiet", "/norestart", "/log", $installLog -Wait -PassThru | Out-Null
 
           $installedExe = "$env:ProgramFiles\ReVerfyx Client Launcher\ReVerfyxClientLauncher.exe"
-          $installedJar = "$env:ProgramFiles\ReVerfyx Client Launcher\bundled-mod\ReVerfyxClient.jar"
-          if (-not (Test-Path $installedExe) -or -not (Test-Path $installedJar)) {
-            Write-Host "##[error]Installer did not place the launcher/mod jar where expected."
+          $installedJar116 = "$env:ProgramFiles\ReVerfyx Client Launcher\bundled-mod\ReVerfyxClient-1.16.5.jar"
+          $installedJar1214 = "$env:ProgramFiles\ReVerfyx Client Launcher\bundled-mod\ReVerfyxClient-1.21.4.jar"
+          if (-not (Test-Path $installedExe) -or -not (Test-Path $installedJar116) -or -not (Test-Path $installedJar1214)) {
+            Write-Host "##[error]Installer did not place the launcher/mod jars where expected."
             Get-Content $installLog -ErrorAction SilentlyContinue | Select-Object -Last 300
             exit 1
           }

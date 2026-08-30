@@ -553,10 +553,11 @@ public partial class MainWindow : Window
             var profile = new Profile { Username = username };
             var launcher = new GameLauncher(_rootDir);
             string gameDir = _instanceService.GetGameDir(instance);
+            bool ownModInstalled = true;
             if (instance.Loader == ModLoader.Fabric)
             {
                 string modsDir = _instanceService.GetModsDir(instance);
-                BundledModService.EnsureReVerfyxClientInstalled(modsDir);
+                ownModInstalled = BundledModService.EnsureReVerfyxClientInstalled(modsDir, instance.McVersion);
                 await EnsureFabricApiInstalledAsync(modsDir, instance.McVersion);
             }
             launcher.Launch(installed, profile, instance, _settings, gameDir);
@@ -564,7 +565,10 @@ public partial class MainWindow : Window
             instance.LastPlayedAt = DateTimeOffset.UtcNow;
             _instanceService.Save(instance);
 
-            StatusText.Text = $"Запущено: {instance.Name} ({launchDetail.Id}) как {username}.";
+            StatusText.Text = ownModInstalled
+                ? $"Запущено: {instance.Name} ({launchDetail.Id}) как {username}."
+                : $"Запущено: {instance.Name} ({launchDetail.Id}) как {username}. "
+                    + $"ReVerfyx Client недоступен для {instance.McVersion} — доступные версии: {string.Join(", ", BundledModService.SupportedMcVersions)}.";
             RefreshInstances();
         }
         catch (Exception ex)

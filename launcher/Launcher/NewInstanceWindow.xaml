@@ -34,6 +34,8 @@
                 <RadioButton x:Name="FabricRadio" Content="Fabric (для модов)" GroupName="Loader"
                              Foreground="{DynamicResource TextSecondaryBrush}" />
             </StackPanel>
+            <TextBlock Text="ReVerfyx Client (свой мод лаунчера) собран под Minecraft 1.16.5 и 1.21.4 — на других версиях Fabric-сборка работает, но без него."
+                       FontSize="9" Foreground="{DynamicResource TextSecondaryBrush}" TextWrapping="Wrap" Margin="0,-14,0,18" />
 
             <TextBlock x:Name="ErrorText" Foreground="#D9534F" Margin="0,0,0,8" TextWrapping="Wrap" />
         </StackPanel>

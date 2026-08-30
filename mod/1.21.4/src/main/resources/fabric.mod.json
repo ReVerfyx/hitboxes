@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "id": "hitboxdebug",
+  "version": "${version}",
+  "name": "ReVerfyx Client",
+  "description": "ReVerfyx Client — singleplayer utility mod: mob auto-farm, hitbox visualization/enlargement, auto-eat, step-by-step farm builder. No PvP features.",
+  "authors": ["hitboxes"],
+  "contact": {},
+  "license": "MIT",
+  "icon": "assets/hitboxdebug/icon.png",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "com.local.hitboxdebug.HitboxDebugClient"
+    ]
+  },
+  "mixins": [
+    "hitboxdebug.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.16.0",
+    "fabric": "*",
+    "minecraft": "1.21.4"
+  }
+}
