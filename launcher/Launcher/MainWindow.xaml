@@ -82,9 +82,9 @@
                         <TextBlock x:Name="PageSubtitle" Text="Выбор сборки" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,3,0,0" />
                     </StackPanel>
 
-                    <Border HorizontalAlignment="Right" Background="{DynamicResource PanelBrush}" BorderBrush="{DynamicResource BorderBrush}"
+                    <Border x:Name="AccountChipBorder" HorizontalAlignment="Right" Background="{DynamicResource PanelBrush}" BorderBrush="{DynamicResource BorderBrush}"
                             BorderThickness="1" CornerRadius="14" Padding="8,7" Cursor="Hand" MouseLeftButtonUp="AccountChip_Click"
-                            ToolTip="Открыть настройки, чтобы сменить ник">
+                            ToolTip="Сменить аккаунт">
                         <StackPanel Orientation="Horizontal">
                             <Border Width="30" Height="30" CornerRadius="9" Background="{StaticResource AccentGradientBrush}">
                                 <TextBlock x:Name="AvatarInitial" Text="P" FontSize="12" FontWeight="Bold" Foreground="White"
@@ -95,8 +95,28 @@
                                            Foreground="{DynamicResource TextPrimaryBrush}" />
                                 <TextBlock Text="Оффлайн аккаунт" FontSize="9" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,2,0,0" />
                             </StackPanel>
+                            <TextBlock Text="&#9662;" FontSize="9" Foreground="{DynamicResource TextSecondaryBrush}" Margin="8,0,2,0" VerticalAlignment="Center" />
                         </StackPanel>
                     </Border>
+
+                    <Popup x:Name="AccountQuickSwitchPopup" PlacementTarget="{Binding ElementName=AccountChipBorder}"
+                           Placement="Bottom" VerticalOffset="6" StaysOpen="False" AllowsTransparency="True">
+                        <Border Style="{StaticResource GlassCardStyle}" Width="220" Padding="10">
+                            <StackPanel>
+                                <ItemsControl x:Name="QuickAccountsList">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Button Content="{Binding Username}" Tag="{Binding Account}" Click="QuickSelectAccount_Click"
+                                                    Style="{StaticResource SecondaryButtonStyle}" HorizontalContentAlignment="Left"
+                                                    HorizontalAlignment="Stretch" Margin="0,0,0,4" />
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                                <Button Content="Управление аккаунтами" Style="{StaticResource PrimaryButtonStyle}"
+                                        Margin="0,4,0,0" Click="OpenAccountsManagement_Click" />
+                            </StackPanel>
+                        </Border>
+                    </Popup>
                 </Grid>
 
                 <Grid Grid.Row="1">
@@ -171,6 +191,9 @@
                     </Grid>
 
                     <!-- ============ Instances ============ -->
+                    <!-- Prism-style split view: a compact icon grid on the left (click to
+                         select — no per-card buttons), a fixed detail/action panel on the
+                         right for whichever instance is selected. -->
                     <Grid x:Name="InstancesView" Visibility="Collapsed" Opacity="0">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
@@ -180,39 +203,84 @@
                             <TextBlock Text="Установленные сборки" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center" />
                             <Button HorizontalAlignment="Right" Content="+  Создать сборку" Style="{StaticResource PrimaryButtonStyle}" Padding="16,10" Click="NewInstanceButton_Click" />
                         </Grid>
-                        <ScrollViewer Grid.Row="1">
-                            <ItemsControl x:Name="InstancesList">
-                                <ItemsControl.ItemsPanel>
-                                    <ItemsPanelTemplate>
-                                        <WrapPanel Orientation="Horizontal" />
-                                    </ItemsPanelTemplate>
-                                </ItemsControl.ItemsPanel>
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <Border Width="252" Padding="17" Margin="0,0,10,10" Loaded="InstanceCard_Loaded">
-                                            <Border.Style>
-                                                <Style TargetType="Border" BasedOn="{StaticResource StatCardStyle}">
-                                                    <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding IsSelected}" Value="True">
-                                                            <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
-                                                        </DataTrigger>
-                                                    </Style.Triggers>
-                                                </Style>
-                                            </Border.Style>
-                                            <StackPanel>
-                                                <TextBlock Text="{Binding Name}" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" TextTrimming="CharacterEllipsis" />
-                                                <TextBlock Text="{Binding Subtitle}" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,5,0,0" />
-                                                <StackPanel Orientation="Horizontal" Margin="0,16,0,0">
-                                                    <Button Content="Играть" Style="{StaticResource CompactButtonStyle}" Tag="{Binding}" Click="PlayInstance_Click" />
-                                                    <Button Content="Настроить" Style="{StaticResource CompactButtonStyle}" Tag="{Binding}" Click="EditInstance_Click" Margin="6,0,0,0" />
-                                                    <Button Content="Удалить" Style="{StaticResource CompactButtonStyle}" Tag="{Binding}" Click="DeleteInstance_Click" Margin="6,0,0,0" />
+
+                        <Grid Grid.Row="1">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="16" />
+                                <ColumnDefinition Width="240" />
+                            </Grid.ColumnDefinitions>
+
+                            <ScrollViewer Grid.Column="0">
+                                <ItemsControl x:Name="InstancesList">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <WrapPanel Orientation="Horizontal" />
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Width="128" Padding="14,16" Margin="0,0,12,12" Cursor="Hand"
+                                                    Tag="{Binding}" MouseLeftButtonUp="InstanceCard_Click" Loaded="InstanceCard_Loaded">
+                                                <Border.Style>
+                                                    <Style TargetType="Border" BasedOn="{StaticResource StatCardStyle}">
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                                                <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Border.Style>
+                                                <StackPanel HorizontalAlignment="Center">
+                                                    <Border Width="56" Height="56" CornerRadius="14" HorizontalAlignment="Center">
+                                                        <Border.Style>
+                                                            <Style TargetType="Border">
+                                                                <Setter Property="Background" Value="{StaticResource VanillaIconBrush}" />
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding Instance.Loader}" Value="Fabric">
+                                                                        <Setter Property="Background" Value="{StaticResource FabricIconBrush}" />
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </Border.Style>
+                                                        <TextBlock Text="{Binding IconLetter}" FontSize="22" FontWeight="Bold" Foreground="White"
+                                                                   HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                    </Border>
+                                                    <TextBlock Text="{Binding Name}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}"
+                                                               TextTrimming="CharacterEllipsis" TextAlignment="Center" TextWrapping="Wrap" MaxWidth="108" Margin="0,10,0,0" />
+                                                    <TextBlock Text="{Binding Subtitle}" FontSize="9" Foreground="{DynamicResource TextSecondaryBrush}"
+                                                               TextTrimming="CharacterEllipsis" TextAlignment="Center" MaxWidth="108" Margin="0,3,0,0" />
                                                 </StackPanel>
-                                            </StackPanel>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </ScrollViewer>
+
+                            <Border Grid.Column="2" Style="{StaticResource GlassCardStyle}" Padding="20" VerticalAlignment="Top">
+                                <Grid>
+                                    <StackPanel x:Name="InstanceDetailEmptyState">
+                                        <TextBlock Text="Выберите сборку слева, чтобы увидеть действия." FontSize="11"
+                                                   Foreground="{DynamicResource TextSecondaryBrush}" TextWrapping="Wrap" />
+                                    </StackPanel>
+                                    <StackPanel x:Name="InstanceDetailContent" Visibility="Collapsed">
+                                        <Border x:Name="InstanceDetailIcon" Width="64" Height="64" CornerRadius="16" HorizontalAlignment="Left">
+                                            <TextBlock x:Name="InstanceDetailIconLetter" Text="V" FontSize="26" FontWeight="Bold" Foreground="White"
+                                                       HorizontalAlignment="Center" VerticalAlignment="Center" />
                                         </Border>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                        </ScrollViewer>
+                                        <TextBlock x:Name="InstanceDetailName" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}"
+                                                   Margin="0,14,0,0" TextWrapping="Wrap" />
+                                        <TextBlock x:Name="InstanceDetailSubtitle" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,4,0,0" />
+
+                                        <Button Content="▶  Играть" Style="{StaticResource PrimaryButtonStyle}" Margin="0,20,0,8" Click="PlaySelected_Click" />
+                                        <Button Content="Настроить" Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,0,8" Click="EditSelected_Click" />
+                                        <Button Content="Копировать" Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,0,8" Click="DuplicateSelected_Click" />
+                                        <Button Content="Открыть папку" Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,0,8" Click="OpenSelectedFolder_Click" />
+                                        <Button Content="Удалить" Style="{StaticResource SecondaryButtonStyle}" Click="DeleteSelected_Click" />
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+                        </Grid>
                     </Grid>
 
                     <!-- ============ Settings ============ -->
@@ -263,19 +331,16 @@
                                         <TextBlock Text="Java" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,6" />
                                         <TextBox x:Name="SettingsJavaPathBox" Margin="0,0,0,14" />
                                         <TextBlock Text="Выделенная память" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,6" />
-                                        <ComboBox x:Name="SettingsMemoryBox" MaxWidth="200" HorizontalAlignment="Left" Margin="0,0,0,6">
-                                            <ComboBox.ItemTemplate>
-                                                <DataTemplate>
-                                                    <TextBlock>
-                                                        <TextBlock.Text>
-                                                            <Binding StringFormat="{}{0} ГБ" />
-                                                        </TextBlock.Text>
-                                                    </TextBlock>
-                                                </DataTemplate>
-                                            </ComboBox.ItemTemplate>
-                                        </ComboBox>
-                                        <TextBlock Text="От 4 ГБ до доступной физической памяти компьютера"
-                                                   FontSize="9" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,14" />
+                                        <TextBlock x:Name="SettingsMemoryValueText" Text="4 ГБ" FontSize="14" FontWeight="Bold"
+                                                   Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,8" />
+                                        <Slider x:Name="SettingsMemorySlider" Minimum="4" Maximum="16" TickFrequency="1" IsSnapToTickEnabled="True"
+                                                MaxWidth="320" HorizontalAlignment="Left" ValueChanged="SettingsMemorySlider_ValueChanged" />
+                                        <Grid MaxWidth="320" HorizontalAlignment="Left" Margin="0,4,0,14">
+                                            <TextBlock x:Name="SettingsMemoryMinLabel" Text="4 ГБ" FontSize="9"
+                                                       Foreground="{DynamicResource TextSecondaryBrush}" HorizontalAlignment="Left" />
+                                            <TextBlock x:Name="SettingsMemoryMaxLabel" Text="16 ГБ" FontSize="9"
+                                                       Foreground="{DynamicResource TextSecondaryBrush}" HorizontalAlignment="Right" />
+                                        </Grid>
                                         <TextBlock Text="Дополнительные аргументы JVM" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,6" />
                                         <TextBox x:Name="SettingsJvmArgsBox" />
                                     </StackPanel>

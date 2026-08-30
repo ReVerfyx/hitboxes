@@ -15,7 +15,13 @@
         </Grid.RowDefinitions>
 
         <TabControl Grid.Row="0" Background="Transparent">
-            <TabItem Header="Общие">
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="&#9881;" FontSize="12" Margin="0,0,6,0" />
+                        <TextBlock Text="Общие" />
+                    </StackPanel>
+                </TabItem.Header>
                 <StackPanel Margin="16">
                     <TextBlock Text="Название" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,4" />
                     <TextBox x:Name="NameBox" Margin="0,0,0,16" />
@@ -37,7 +43,13 @@
                 </StackPanel>
             </TabItem>
 
-            <TabItem x:Name="ModsTab" Header="Моды (Modrinth)">
+            <TabItem x:Name="ModsTab">
+                <TabItem.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="&#128230;" FontSize="12" Margin="0,0,6,0" />
+                        <TextBlock Text="Моды (Modrinth)" />
+                    </StackPanel>
+                </TabItem.Header>
                 <Grid Margin="16">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />

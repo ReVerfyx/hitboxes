@@ -19,6 +19,18 @@
                 <GradientStop Color="#6658E8" Offset="1" />
             </LinearGradientBrush>
 
+            <!-- Instance-card monogram tiles: Vanilla (V) vs Fabric (F) get distinct
+                 gradients so the grid reads at a glance without needing real per-instance
+                 artwork — an abstract palette cue, not a copy of any block/loader texture. -->
+            <LinearGradientBrush x:Key="VanillaIconBrush" StartPoint="0,0" EndPoint="1,1">
+                <GradientStop Color="#6FCF7A" Offset="0" />
+                <GradientStop Color="#3F8F52" Offset="1" />
+            </LinearGradientBrush>
+            <LinearGradientBrush x:Key="FabricIconBrush" StartPoint="0,0" EndPoint="1,1">
+                <GradientStop Color="#9287FF" Offset="0" />
+                <GradientStop Color="#6658E8" Offset="1" />
+            </LinearGradientBrush>
+
             <!-- ================= Buttons ================= -->
 
             <!-- Primary CTA (Играть, Создать, Сохранить) — gradient fill, soft

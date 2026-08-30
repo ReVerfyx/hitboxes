@@ -74,4 +74,38 @@ public sealed class InstanceService
             Directory.Delete(dir, recursive: true);
         }
     }
+
+    /// <summary>Copies an instance's entire folder (game dir, mods, everything) under a new Id, Prism-style "Копировать".</summary>
+    public Instance Duplicate(Instance source)
+    {
+        var copy = new Instance
+        {
+            Name = source.Name + " (копия)",
+            McVersion = source.McVersion,
+            Loader = source.Loader,
+            FabricLoaderVersion = source.FabricLoaderVersion,
+            IconKey = source.IconKey,
+            MemoryMinMb = source.MemoryMinMb,
+            MemoryMaxMb = source.MemoryMaxMb,
+            ExtraJvmArgs = source.ExtraJvmArgs,
+            JavaExecutableOverride = source.JavaExecutableOverride,
+        };
+
+        CopyDirectory(GetInstanceDir(source), GetInstanceDir(copy));
+        Save(copy);
+        return copy;
+    }
+
+    private static void CopyDirectory(string sourceDir, string destDir)
+    {
+        Directory.CreateDirectory(destDir);
+        foreach (string file in Directory.EnumerateFiles(sourceDir))
+        {
+            File.Copy(file, Path.Combine(destDir, Path.GetFileName(file)));
+        }
+        foreach (string dir in Directory.EnumerateDirectories(sourceDir))
+        {
+            CopyDirectory(dir, Path.Combine(destDir, Path.GetFileName(dir)));
+        }
+    }
 }

@@ -14,6 +14,9 @@ public sealed class InstanceViewModel
     /// <summary>Set by MainWindow.RefreshInstances so the grid card can show a selected-glow border. No change notification needed — the ItemsSource list is rebuilt on every refresh.</summary>
     public bool IsSelected { get; set; }
 
+    /// <summary>Single-letter loader monogram for the grid card's icon tile.</summary>
+    public string IconLetter => Instance.Loader == ModLoader.Fabric ? "F" : "V";
+
     public InstanceViewModel(Instance instance)
     {
         Instance = instance;

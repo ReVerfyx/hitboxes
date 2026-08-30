@@ -1,4 +1,5 @@
 using System.Windows;
+using System.Windows.Controls;
 using Hitboxes.Launcher.Models;
 using Hitboxes.Launcher.Services;
 using Hitboxes.Launcher.Theming;
@@ -9,6 +10,8 @@ public partial class NewInstanceWindow : Window
 {
     private readonly MinecraftVersionService _versionService;
     private readonly InstanceService _instanceService;
+
+    private List<VersionEntry> _allVersions = new();
 
     public Instance? CreatedInstance { get; private set; }
 
@@ -25,19 +28,13 @@ public partial class NewInstanceWindow : Window
 
             if (App.ScreenshotMode)
             {
-                VersionComboBox.ItemsSource = ScreenshotHarness.SampleVersions;
-                VersionComboBox.SelectedIndex = 0;
+                SetVersions(ScreenshotHarness.SampleVersions);
                 return;
             }
 
             try
             {
-                var versions = await _versionService.GetSupportedReleasesAsync();
-                VersionComboBox.ItemsSource = versions;
-                if (versions.Count > 0)
-                {
-                    VersionComboBox.SelectedIndex = 0;
-                }
+                SetVersions(await _versionService.GetSupportedReleasesAsync());
             }
             catch (Exception ex)
             {
@@ -46,9 +43,33 @@ public partial class NewInstanceWindow : Window
         };
     }
 
+    private void SetVersions(List<VersionEntry> versions)
+    {
+        _allVersions = versions;
+        VersionListBox.ItemsSource = _allVersions;
+        if (_allVersions.Count > 0)
+        {
+            VersionListBox.SelectedIndex = 0;
+        }
+    }
+
+    private void VersionSearchBox_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        string query = VersionSearchBox.Text.Trim();
+        var filtered = string.IsNullOrEmpty(query)
+            ? _allVersions
+            : _allVersions.Where(v => v.Id.Contains(query, StringComparison.OrdinalIgnoreCase)).ToList();
+
+        VersionListBox.ItemsSource = filtered;
+        if (filtered.Count > 0)
+        {
+            VersionListBox.SelectedIndex = 0;
+        }
+    }
+
     private void Create_Click(object sender, RoutedEventArgs e)
     {
-        if (VersionComboBox.SelectedItem is not VersionEntry selected)
+        if (VersionListBox.SelectedItem is not VersionEntry selected)
         {
             ErrorText.Text = "Выберите версию.";
             return;

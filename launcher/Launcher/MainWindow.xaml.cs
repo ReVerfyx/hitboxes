@@ -155,6 +155,70 @@ public partial class MainWindow : Window
         InstancesList.ItemsSource = instances;
 
         UpdateHomeHero();
+        UpdateInstancesDetailPanel();
+    }
+
+    private void UpdateInstancesDetailPanel()
+    {
+        bool hasSelection = _selectedInstance is not null;
+        InstanceDetailEmptyState.Visibility = hasSelection ? Visibility.Collapsed : Visibility.Visible;
+        InstanceDetailContent.Visibility = hasSelection ? Visibility.Visible : Visibility.Collapsed;
+        if (_selectedInstance is not { } vm)
+        {
+            return;
+        }
+
+        InstanceDetailName.Text = vm.Name;
+        InstanceDetailSubtitle.Text = $"Minecraft {vm.Subtitle}";
+        InstanceDetailIconLetter.Text = vm.IconLetter;
+        InstanceDetailIcon.Background = (Brush)FindResource(
+            vm.Instance.Loader == ModLoader.Fabric ? "FabricIconBrush" : "VanillaIconBrush");
+    }
+
+    private void InstanceCard_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
+    {
+        var vm = (InstanceViewModel)((FrameworkElement)sender).Tag;
+        _selectedInstance = vm;
+        RefreshInstances();
+    }
+
+    private void DuplicateSelected_Click(object sender, RoutedEventArgs e)
+    {
+        if (_selectedInstance is null) return;
+
+        var copy = _instanceService.Duplicate(_selectedInstance.Instance);
+        _selectedInstance = new InstanceViewModel(copy);
+        RefreshInstances();
+    }
+
+    private void OpenSelectedFolder_Click(object sender, RoutedEventArgs e)
+    {
+        if (_selectedInstance is null) return;
+
+        try
+        {
+            string dir = _instanceService.GetGameDir(_selectedInstance.Instance);
+            Directory.CreateDirectory(dir);
+            Process.Start(new ProcessStartInfo(dir) { UseShellExecute = true });
+        }
+        catch (Exception ex)
+        {
+            StatusText.Text = $"Не удалось открыть папку: {ex.Message}";
+        }
+    }
+
+    private void DeleteSelected_Click(object sender, RoutedEventArgs e)
+    {
+        if (_selectedInstance is null) return;
+
+        var result = MessageBox.Show($"Удалить сборку «{_selectedInstance.Name}»? Файлы мира будут удалены безвозвратно.",
+            "Подтверждение", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+        if (result == MessageBoxResult.Yes)
+        {
+            _instanceService.Delete(_selectedInstance.Instance);
+            _selectedInstance = null;
+            RefreshInstances();
+        }
     }
 
     private void UpdateHomeHero()
@@ -227,7 +291,29 @@ public partial class MainWindow : Window
         ShowView(InstancesView);
     }
 
-    private void AccountChip_Click(object sender, RoutedEventArgs e) => SettingsButton_Click(sender, e);
+    private void AccountChip_Click(object sender, RoutedEventArgs e)
+    {
+        QuickAccountsList.ItemsSource = _settings.Accounts
+            .Where(a => a.Id != _settings.CurrentAccountId)
+            .Select(a => new AccountRow { Account = a, IsCurrent = false })
+            .ToList();
+        AccountQuickSwitchPopup.IsOpen = true;
+    }
+
+    private void QuickSelectAccount_Click(object sender, RoutedEventArgs e)
+    {
+        var account = (Account)((FrameworkElement)sender).Tag;
+        _settings.CurrentAccountId = account.Id;
+        _settingsService.Save(_settings);
+        UpdateHomeHero();
+        AccountQuickSwitchPopup.IsOpen = false;
+    }
+
+    private void OpenAccountsManagement_Click(object sender, RoutedEventArgs e)
+    {
+        AccountQuickSwitchPopup.IsOpen = false;
+        SettingsButton_Click(sender, e);
+    }
 
     private void NewInstanceButton_Click(object sender, RoutedEventArgs e)
     {
@@ -259,9 +345,12 @@ public partial class MainWindow : Window
         SettingsJvmArgsBox.Text = _settings.DefaultJvmArgs;
 
         var memoryOptionsGb = SystemMemory.BuildMemoryOptionsGb();
-        SettingsMemoryBox.ItemsSource = memoryOptionsGb;
-        int selectedGb = Math.Max(4, (int)Math.Ceiling(_settings.DefaultMemoryMaxMb / 1024.0));
-        SettingsMemoryBox.SelectedItem = memoryOptionsGb.Contains(selectedGb) ? selectedGb : memoryOptionsGb.FirstOrDefault();
+        int maxGb = memoryOptionsGb.Count > 0 ? memoryOptionsGb.Max() : 16;
+        int selectedGb = Math.Clamp((int)Math.Ceiling(_settings.DefaultMemoryMaxMb / 1024.0), 4, maxGb);
+        SettingsMemorySlider.Maximum = maxGb;
+        SettingsMemorySlider.Value = selectedGb;
+        SettingsMemoryMaxLabel.Text = $"{maxGb} ГБ";
+        SettingsMemoryValueText.Text = $"{selectedGb} ГБ";
 
         SettingsMusicEnabledBox.IsChecked = _settings.MainMenuMusicEnabled;
         SettingsMusicVolumeSlider.Value = _settings.MainMenuMusicVolume;
@@ -272,6 +361,12 @@ public partial class MainWindow : Window
         UpdateSettingsGlassPreview();
 
         SettingsStatusText.Text = string.Empty;
+    }
+
+    private void SettingsMemorySlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+    {
+        if (SettingsMemoryValueText is null) return;
+        SettingsMemoryValueText.Text = $"{(int)Math.Round(e.NewValue)} ГБ";
     }
 
     private void RefreshAccountsList()
@@ -354,7 +449,7 @@ public partial class MainWindow : Window
 
     private void SaveSettings_Click(object sender, RoutedEventArgs e)
     {
-        int memoryGb = SettingsMemoryBox.SelectedItem is int value ? value : 4;
+        int memoryGb = (int)Math.Round(SettingsMemorySlider.Value);
 
         _settings.JavaExecutable = string.IsNullOrWhiteSpace(SettingsJavaPathBox.Text) ? "javaw" : SettingsJavaPathBox.Text.Trim();
         _settings.DefaultMemoryMinMb = 512;
@@ -385,12 +480,6 @@ public partial class MainWindow : Window
         SettingsStatusText.Text = "Сохранено.";
     }
 
-    private void EditInstance_Click(object sender, RoutedEventArgs e)
-    {
-        var vm = (InstanceViewModel)((FrameworkElement)sender).Tag;
-        EditInstance(vm);
-    }
-
     private void EditSelected_Click(object sender, RoutedEventArgs e)
     {
         if (_selectedInstance is not null)
@@ -406,28 +495,6 @@ public partial class MainWindow : Window
         {
             RefreshInstances();
         }
-    }
-
-    private void DeleteInstance_Click(object sender, RoutedEventArgs e)
-    {
-        var vm = (InstanceViewModel)((FrameworkElement)sender).Tag;
-        var result = MessageBox.Show($"Удалить сборку «{vm.Name}»? Файлы мира будут удалены безвозвратно.",
-            "Подтверждение", MessageBoxButton.YesNo, MessageBoxImage.Warning);
-        if (result == MessageBoxResult.Yes)
-        {
-            _instanceService.Delete(vm.Instance);
-            if (_selectedInstance?.Instance.Id == vm.Instance.Id)
-            {
-                _selectedInstance = null;
-            }
-            RefreshInstances();
-        }
-    }
-
-    private void PlayInstance_Click(object sender, RoutedEventArgs e)
-    {
-        var vm = (InstanceViewModel)((FrameworkElement)sender).Tag;
-        _ = LaunchInstanceAsync(vm, (Button)sender);
     }
 
     private void PlaySelected_Click(object sender, RoutedEventArgs e)
