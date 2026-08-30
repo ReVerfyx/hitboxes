@@ -33,11 +33,7 @@ public partial class InstanceSettingsWindow : Window
 
         RefreshInstalledMods();
 
-        Loaded += (_, _) =>
-        {
-            GlassWindowHelper.Enable(this, isDialog: true);
-            UiAnimations.FadeIn(this);
-        };
+        Loaded += (_, _) => UiAnimations.FadeIn(this);
     }
 
     private void RefreshInstalledMods()

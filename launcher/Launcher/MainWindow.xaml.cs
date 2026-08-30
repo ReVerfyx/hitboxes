@@ -44,9 +44,6 @@ public partial class MainWindow : Window
         {
             if (App.ScreenshotMode) ScreenshotHarness.Log("MainWindow.Loaded: entered.");
 
-            GlassWindowHelper.Enable(this);
-            if (App.ScreenshotMode) ScreenshotHarness.Log("MainWindow.Loaded: GlassWindowHelper.Enable done.");
-
             UiAnimations.FadeIn(this);
             if (App.ScreenshotMode) ScreenshotHarness.Log("MainWindow.Loaded: FadeIn done.");
 
@@ -102,12 +99,17 @@ public partial class MainWindow : Window
             .Select(i => new InstanceViewModel(i))
             .OrderByDescending(vm => vm.Instance.LastPlayedAt ?? DateTimeOffset.MinValue)
             .ToList();
-        InstancesList.ItemsSource = instances;
 
         if (_selectedInstance is null || instances.All(vm => vm.Instance.Id != _selectedInstance.Instance.Id))
         {
             _selectedInstance = instances.FirstOrDefault();
         }
+        foreach (var vm in instances)
+        {
+            vm.IsSelected = vm.Instance.Id == _selectedInstance?.Instance.Id;
+        }
+        InstancesList.ItemsSource = instances;
+
         UpdateHomeHero();
     }
 
@@ -131,7 +133,9 @@ public partial class MainWindow : Window
         }
 
         RamLabel.Text = $"{Math.Max(1, _settings.DefaultMemoryMaxMb / 1024)} ГБ";
-        AccountLabel.Text = string.IsNullOrWhiteSpace(UsernameBox.Text) ? "Player" : UsernameBox.Text.Trim();
+        string username = string.IsNullOrWhiteSpace(UsernameBox.Text) ? "Player" : UsernameBox.Text.Trim();
+        AccountLabel.Text = username;
+        AvatarInitial.Text = username[..1].ToUpperInvariant();
     }
 
     private void ShowView(UIElement showing)
@@ -142,9 +146,13 @@ public partial class MainWindow : Window
 
     private void SetActiveNav(Button active)
     {
-        HomeNavButton.Style = (Style)FindResource("GlassSecondaryButtonStyle");
-        InstancesNavButton.Style = (Style)FindResource("GlassSecondaryButtonStyle");
-        active.Style = (Style)FindResource("GlassButtonStyle");
+        // Tag is compared against the XAML Trigger's Value="True" as a plain
+        // string (Tag's DP type is object, so WPF has no other type hint to
+        // convert against) — use string literals here too, not a C# bool,
+        // or the trigger silently never matches.
+        HomeNavButton.Tag = "False";
+        InstancesNavButton.Tag = "False";
+        active.Tag = "True";
     }
 
     private void HomeButton_Click(object sender, RoutedEventArgs e)
@@ -170,7 +178,9 @@ public partial class MainWindow : Window
         // during XAML parsing — at that point AccountLabel (declared later in
         // the visual tree) hasn't been assigned to its named field yet.
         if (AccountLabel is null) return;
-        AccountLabel.Text = string.IsNullOrWhiteSpace(UsernameBox.Text) ? "Player" : UsernameBox.Text.Trim();
+        string username = string.IsNullOrWhiteSpace(UsernameBox.Text) ? "Player" : UsernameBox.Text.Trim();
+        AccountLabel.Text = username;
+        AvatarInitial.Text = username[..1].ToUpperInvariant();
     }
 
     private void NewInstanceButton_Click(object sender, RoutedEventArgs e)

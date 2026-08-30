@@ -3,6 +3,8 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Настройки" Height="650" Width="560"
         Background="{DynamicResource BackgroundBrush}"
+        FontFamily="{StaticResource AppFontFamily}"
+        Foreground="{DynamicResource TextPrimaryBrush}"
         WindowStartupLocation="CenterOwner" ResizeMode="NoResize">
 
     <Border Style="{StaticResource GlassCardStyle}" Margin="14" Padding="2">
@@ -73,8 +75,8 @@
                 </Border>
 
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                    <Button Content="Отмена" Style="{StaticResource GlassSecondaryButtonStyle}" Margin="0,0,8,0" Click="Cancel_Click" />
-                    <Button Content="Сохранить" Style="{StaticResource GlassButtonStyle}" Click="Save_Click" />
+                    <Button Content="Отмена" Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,8,0" Click="Cancel_Click" />
+                    <Button Content="Сохранить" Style="{StaticResource PrimaryButtonStyle}" Click="Save_Click" />
                 </StackPanel>
             </StackPanel>
         </ScrollViewer>

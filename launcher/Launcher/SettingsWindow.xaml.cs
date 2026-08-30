@@ -50,7 +50,7 @@ public partial class SettingsWindow : Window
         GlassHexBox.Text = current.GlassTintColor;
         UpdateGlassPreview();
 
-        Loaded += (_, _) => GlassWindowHelper.Enable(this, isDialog: true);
+        Loaded += (_, _) => UiAnimations.FadeIn(this);
     }
 
     private static List<int> BuildMemoryOptionsGb()

@@ -11,6 +11,9 @@ public sealed class InstanceViewModel
         ? $"{Instance.McVersion} · Fabric"
         : Instance.McVersion;
 
+    /// <summary>Set by MainWindow.RefreshInstances so the grid card can show a selected-glow border. No change notification needed — the ItemsSource list is rebuilt on every refresh.</summary>
+    public bool IsSelected { get; set; }
+
     public InstanceViewModel(Instance instance)
     {
         Instance = instance;

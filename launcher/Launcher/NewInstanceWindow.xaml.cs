@@ -21,7 +21,6 @@ public partial class NewInstanceWindow : Window
 
         Loaded += async (_, _) =>
         {
-            GlassWindowHelper.Enable(this, isDialog: true);
             UiAnimations.FadeIn(this);
 
             if (App.ScreenshotMode)
