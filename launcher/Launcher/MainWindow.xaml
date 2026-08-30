@@ -26,60 +26,53 @@
         </Canvas>
 
         <Grid Margin="18">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="230" />
-                <ColumnDefinition Width="18" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="14" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="12" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
 
-            <!-- ============ Sidebar ============ -->
-            <Border Grid.Column="0" Style="{StaticResource GlassCardStyle}" CornerRadius="22" Padding="18">
-                <DockPanel>
-                    <StackPanel DockPanel.Dock="Top">
-                        <StackPanel Orientation="Horizontal" Margin="5,4,4,30">
-                            <Border Width="38" Height="38" CornerRadius="12" Background="{StaticResource AccentGradientBrush}">
-                                <TextBlock Text="R" FontSize="17" FontWeight="Bold" Foreground="White"
-                                           HorizontalAlignment="Center" VerticalAlignment="Center" />
-                            </Border>
-                            <StackPanel Margin="11,0,0,0" VerticalAlignment="Center">
-                                <TextBlock Text="ReVerfyx" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" />
-                                <TextBlock Text="Launcher" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,2,0,0" />
-                            </StackPanel>
-                        </StackPanel>
-                        <Button x:Name="HomeNavButton" Content="Главная" Style="{StaticResource NavButtonStyle}" Margin="0,0,0,4" Click="HomeButton_Click" />
-                        <Button x:Name="InstancesNavButton" Content="Сборки" Style="{StaticResource NavButtonStyle}" Margin="0,0,0,4" Click="InstancesButton_Click" />
-                        <Button x:Name="SettingsNavButton" Content="Настройки" Style="{StaticResource NavButtonStyle}" Click="SettingsButton_Click" />
-                    </StackPanel>
+            <!-- ============ Top toolbar (Prism Launcher's actual MainWindow.ui is a
+                 QToolBar of icon+text buttons — actionAddInstance, actionFoldersButton,
+                 actionSettings — plus the accounts button on the far side, not a sidebar
+                 nav rail) ============ -->
+            <Border Grid.Row="0" Style="{StaticResource GlassCardStyle}" CornerRadius="16" Padding="12,10">
+                <Grid>
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <Border Width="34" Height="34" CornerRadius="10" Background="{StaticResource AccentGradientBrush}" Margin="0,0,14,0">
+                            <TextBlock Text="R" FontSize="15" FontWeight="Bold" Foreground="White"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
 
-                    <Border DockPanel.Dock="Bottom" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}"
-                            BorderThickness="1" CornerRadius="14" Padding="13">
-                        <StackPanel>
-                            <TextBlock Text="СОСТОЯНИЕ" FontSize="9" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,8" />
+                        <Button Style="{StaticResource PrimaryButtonStyle}" Padding="14,9" Click="NewInstanceButton_Click">
                             <StackPanel Orientation="Horizontal">
-                                <Ellipse Width="7" Height="7" Fill="#4ADE80" VerticalAlignment="Center">
-                                    <Ellipse.Effect>
-                                        <DropShadowEffect Color="#4ADE80" Opacity="0.8" BlurRadius="8" ShadowDepth="0" />
-                                    </Ellipse.Effect>
-                                </Ellipse>
-                                <TextBlock x:Name="StatusText" Text="Готов к запуску" FontSize="11" Margin="7,0,0,0"
-                                           Foreground="{DynamicResource TextPrimaryBrush}" TextWrapping="Wrap" VerticalAlignment="Center" />
+                                <TextBlock Text="&#10133;" FontSize="11" Margin="0,0,7,0" />
+                                <TextBlock Text="Добавить сборку" />
                             </StackPanel>
-                        </StackPanel>
-                    </Border>
-                </DockPanel>
-            </Border>
+                        </Button>
 
-            <!-- ============ Main content ============ -->
-            <Grid Grid.Column="2">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="62" />
-                    <RowDefinition Height="*" />
-                </Grid.RowDefinitions>
+                        <Border Width="1" Height="22" Background="{DynamicResource BorderBrush}" Margin="10,0" />
 
-                <Grid Grid.Row="0" Margin="4,0">
-                    <StackPanel VerticalAlignment="Center">
-                        <TextBlock x:Name="PageTitle" Text="Главная" FontSize="21" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" />
-                        <TextBlock x:Name="PageSubtitle" Text="Выбор сборки" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,3,0,0" />
+                        <Button x:Name="InstancesNavButton" Style="{StaticResource NavButtonStyle}" Click="InstancesButton_Click" Margin="0,0,4,0">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="&#129521;" FontSize="12" Margin="0,0,7,0" />
+                                <TextBlock Text="Сборки" />
+                            </StackPanel>
+                        </Button>
+                        <Button Style="{StaticResource NavButtonStyle}" Click="OpenRootFolder_Click" Margin="0,0,4,0">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="&#128193;" FontSize="12" Margin="0,0,7,0" />
+                                <TextBlock Text="Папка" />
+                            </StackPanel>
+                        </Button>
+                        <Button x:Name="SettingsNavButton" Style="{StaticResource NavButtonStyle}" Click="SettingsButton_Click">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="&#9881;" FontSize="12" Margin="0,0,7,0" />
+                                <TextBlock Text="Настройки" />
+                            </StackPanel>
+                        </Button>
                     </StackPanel>
 
                     <Border x:Name="AccountChipBorder" HorizontalAlignment="Right" Background="{DynamicResource PanelBrush}" BorderBrush="{DynamicResource BorderBrush}"
@@ -118,79 +111,13 @@
                         </Border>
                     </Popup>
                 </Grid>
+            </Border>
 
-                <Grid Grid.Row="1">
-                    <!-- ============ Home ============ -->
-                    <Grid x:Name="HomeView">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="*" />
-                            <RowDefinition Height="Auto" />
-                        </Grid.RowDefinitions>
-
-                        <Border Grid.Row="0" Style="{StaticResource GlassCardStyle}" CornerRadius="26" MinHeight="340">
-                            <Grid>
-                                <Ellipse Width="360" Height="360" HorizontalAlignment="Right" VerticalAlignment="Top"
-                                          Margin="0,-140,-140,0" Fill="#8B7CFF" Opacity="0.20">
-                                    <Ellipse.Effect>
-                                        <BlurEffect Radius="90" />
-                                    </Ellipse.Effect>
-                                </Ellipse>
-
-                                <Border Width="190" Height="190" CornerRadius="40" HorizontalAlignment="Right" VerticalAlignment="Center"
-                                        Margin="0,0,60,0" Background="#128B7CFF" BorderBrush="#1FFFFFFF" BorderThickness="1"
-                                        RenderTransformOrigin="0.5,0.5">
-                                    <Border.RenderTransform>
-                                        <RotateTransform Angle="12" />
-                                    </Border.RenderTransform>
-                                    <TextBlock Text="R" FontSize="90" FontWeight="Bold" Foreground="#14FFFFFF"
-                                               HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                </Border>
-
-                                <StackPanel VerticalAlignment="Center" Margin="44,0,0,0" MaxWidth="620">
-                                    <Border Background="#1D8B7CFF" BorderBrush="#338B7CFF" BorderThickness="1" CornerRadius="7"
-                                            Padding="9,5" HorizontalAlignment="Left">
-                                        <TextBlock Text="ВЫБРАННАЯ СБОРКА" FontSize="9" FontWeight="Bold" Foreground="#C9BFFF" />
-                                    </Border>
-                                    <TextBlock x:Name="SelectedName" Text="ReVerfyx" FontSize="42" FontWeight="Bold"
-                                               Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,16,0,0" TextTrimming="CharacterEllipsis" />
-                                    <TextBlock x:Name="SelectedSubtitle" Text="Minecraft 1.21.4 · Fabric" FontSize="13"
-                                               Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,8,0,0" />
-                                    <StackPanel Orientation="Horizontal" Margin="0,26,0,0">
-                                        <Button x:Name="PlaySelectedButton" Content="▶  ИГРАТЬ" Style="{StaticResource PrimaryButtonStyle}" Padding="26,13" Click="PlaySelected_Click" />
-                                        <Button x:Name="EditSelectedButton" Content="Настроить" Style="{StaticResource SecondaryButtonStyle}" Padding="18,12" Margin="10,0,0,0" Click="EditSelected_Click" />
-                                    </StackPanel>
-                                </StackPanel>
-                            </Grid>
-                        </Border>
-
-                        <Grid Grid.Row="1" Margin="0,14,0,0">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition />
-                                <ColumnDefinition />
-                                <ColumnDefinition />
-                            </Grid.ColumnDefinitions>
-                            <Border Style="{StaticResource StatCardStyle}" Padding="16" Margin="0,0,6,0">
-                                <StackPanel>
-                                    <TextBlock Text="ПАМЯТЬ" FontSize="9" Foreground="{DynamicResource TextSecondaryBrush}" />
-                                    <TextBlock x:Name="RamLabel" Text="4 ГБ" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,8,0,0" />
-                                </StackPanel>
-                            </Border>
-                            <Border Grid.Column="1" Style="{StaticResource StatCardStyle}" Padding="16" Margin="6,0">
-                                <StackPanel>
-                                    <TextBlock Text="ЗАГРУЗЧИК" FontSize="9" Foreground="{DynamicResource TextSecondaryBrush}" />
-                                    <TextBlock x:Name="LoaderLabel" Text="Fabric" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,8,0,0" />
-                                </StackPanel>
-                            </Border>
-                            <Border Grid.Column="2" Style="{StaticResource StatCardStyle}" Padding="16" Margin="6,0,0,0">
-                                <StackPanel>
-                                    <TextBlock Text="АККАУНТ" FontSize="9" Foreground="{DynamicResource TextSecondaryBrush}" />
-                                    <TextBlock x:Name="AccountLabel" Text="Player" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,8,0,0" />
-                                </StackPanel>
-                            </Border>
-                        </Grid>
-                    </Grid>
-
-                    <!-- ============ Instances ============ -->
+            <!-- ============ Main content — the instance grid is the actual home
+                 view here, same as Prism's MainWindow (its central widget IS the
+                 instance group view; there is no separate dashboard page) ============ -->
+            <Grid Grid.Row="2">
+                <!-- ============ Instances ============ -->
                     <!-- Prism-style split view: a compact icon grid on the left (click to
                          select — no per-card buttons), a fixed detail/action panel on the
                          right for whichever instance is selected. -->
@@ -199,10 +126,7 @@
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
-                        <Grid Grid.Row="0" Margin="0,0,0,14">
-                            <TextBlock Text="Установленные сборки" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center" />
-                            <Button HorizontalAlignment="Right" Content="+  Создать сборку" Style="{StaticResource PrimaryButtonStyle}" Padding="16,10" Click="NewInstanceButton_Click" />
-                        </Grid>
+                        <TextBlock Grid.Row="0" Text="Сборки" FontSize="21" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,14" />
 
                         <Grid Grid.Row="1">
                             <Grid.ColumnDefinitions>
@@ -287,6 +211,8 @@
                     <Grid x:Name="SettingsView" Visibility="Collapsed" Opacity="0">
                         <ScrollViewer VerticalScrollBarVisibility="Auto">
                             <StackPanel MaxWidth="640" HorizontalAlignment="Left" Margin="0,0,0,20">
+
+                                <TextBlock Text="Настройки" FontSize="21" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,14" />
 
                                 <Border Style="{StaticResource StatCardStyle}" Padding="18" Margin="0,0,0,12">
                                     <StackPanel>
@@ -391,7 +317,20 @@
                         </ScrollViewer>
                     </Grid>
                 </Grid>
-            </Grid>
+
+            <!-- ============ Status bar (Prism's MainWindow has a real QStatusBar
+                 docked at the window bottom) ============ -->
+            <Border Grid.Row="4" Style="{StaticResource StatCardStyle}" Padding="14,10">
+                <StackPanel Orientation="Horizontal">
+                    <Ellipse Width="7" Height="7" Fill="#4ADE80" VerticalAlignment="Center">
+                        <Ellipse.Effect>
+                            <DropShadowEffect Color="#4ADE80" Opacity="0.8" BlurRadius="8" ShadowDepth="0" />
+                        </Ellipse.Effect>
+                    </Ellipse>
+                    <TextBlock x:Name="StatusText" Text="Готов к запуску" FontSize="11" Margin="7,0,0,0"
+                               Foreground="{DynamicResource TextPrimaryBrush}" TextWrapping="Wrap" VerticalAlignment="Center" />
+                </StackPanel>
+            </Border>
         </Grid>
     </Grid>
 </Window>

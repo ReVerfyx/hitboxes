@@ -154,23 +154,25 @@
                 </Setter>
             </Style>
 
-            <!-- Sidebar nav item — transparent by default, faint wash on hover, soft
-                 accent-tinted wash (not a solid fill) with white text when active. -->
+            <!-- Toolbar nav/action item (Prism Launcher's real MainWindow.ui is a
+                 QToolBar of icon+text QToolButtons, not a sidebar rail) — transparent
+                 by default, faint wash on hover, soft accent-tinted wash (not a solid
+                 fill) with white text when active/selected. -->
             <Style x:Key="NavButtonStyle" TargetType="Button">
                 <Setter Property="Background" Value="Transparent" />
                 <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
                 <Setter Property="FontFamily" Value="{StaticResource AppFontFamily}" />
                 <Setter Property="FontSize" Value="12" />
                 <Setter Property="FontWeight" Value="Medium" />
-                <Setter Property="Padding" Value="12,11" />
-                <Setter Property="HorizontalContentAlignment" Value="Left" />
+                <Setter Property="Padding" Value="14,10" />
+                <Setter Property="HorizontalContentAlignment" Value="Center" />
                 <Setter Property="Cursor" Value="Hand" />
                 <Setter Property="Tag" Value="False" />
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="Button">
                             <Border x:Name="Chrome" CornerRadius="11" Background="{TemplateBinding Background}">
-                                <ContentPresenter Margin="{TemplateBinding Padding}" VerticalAlignment="Center" />
+                                <ContentPresenter Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="Center" />
                             </Border>
                             <ControlTemplate.Triggers>
                                 <Trigger Property="IsMouseOver" Value="True">

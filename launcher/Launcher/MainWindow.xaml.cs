@@ -36,7 +36,7 @@ public partial class MainWindow : Window
     private LauncherSettings _settings;
     private InstanceViewModel? _selectedInstance;
 
-    /// <summary>Screenshot-harness-only hook: which tab to land on once Loaded finishes its own setup. Null = Home (the default).</summary>
+    /// <summary>Screenshot-harness-only hook: which tab to land on once Loaded finishes its own setup. Null = Instances (the default — Prism's own MainWindow has no separate home page).</summary>
     internal string? ScreenshotInitialView { get; set; }
 
     public MainWindow()
@@ -66,7 +66,7 @@ public partial class MainWindow : Window
             if (App.ScreenshotMode) ScreenshotHarness.Log("MainWindow.Loaded: ThemeService.StartAsync done.");
 
             RefreshInstances();
-            SetActiveNav(HomeNavButton);
+            InstancesButton_Click(this, new RoutedEventArgs());
             if (App.ScreenshotMode) ScreenshotHarness.Log("MainWindow.Loaded: RefreshInstances done.");
 
             if (!App.ScreenshotMode && _instanceService.LoadAll().Count == 0)
@@ -81,10 +81,6 @@ public partial class MainWindow : Window
             {
                 SettingsButton_Click(this, new RoutedEventArgs());
             }
-            else if (ScreenshotInitialView == "Instances")
-            {
-                InstancesButton_Click(this, new RoutedEventArgs());
-            }
             if (App.ScreenshotMode) ScreenshotHarness.Log("MainWindow.Loaded: handler exiting.");
         };
         Closed += (_, _) => _musicService.Dispose();
@@ -98,7 +94,7 @@ public partial class MainWindow : Window
     /// there; for real usage, still guard with try/catch so a missing/
     /// broken audio device can't take the rest of a click handler down
     /// with it (e.g. Settings silently failing to refresh the RAM tile
-    /// because Play() threw before UpdateHomeHero() ran).
+    /// because Play() threw before UpdateAccountChip() ran).
     /// </summary>
     private void PlayMenuMusicSafely()
     {
@@ -159,7 +155,7 @@ public partial class MainWindow : Window
         }
         InstancesList.ItemsSource = instances;
 
-        UpdateHomeHero();
+        UpdateAccountChip();
         UpdateInstancesDetailPanel();
     }
 
@@ -226,35 +222,16 @@ public partial class MainWindow : Window
         }
     }
 
-    private void UpdateHomeHero()
+    private void UpdateAccountChip()
     {
-        bool hasSelection = _selectedInstance is not null;
-        PlaySelectedButton.IsEnabled = hasSelection;
-        EditSelectedButton.IsEnabled = hasSelection;
-
-        if (_selectedInstance is null)
-        {
-            SelectedName.Text = "Нет сборок";
-            SelectedSubtitle.Text = "Нажмите «Создать сборку», чтобы начать";
-            LoaderLabel.Text = "—";
-        }
-        else
-        {
-            SelectedName.Text = _selectedInstance.Name;
-            SelectedSubtitle.Text = $"Minecraft {_selectedInstance.Subtitle}";
-            LoaderLabel.Text = _selectedInstance.Instance.Loader == ModLoader.Fabric ? "Fabric" : "Vanilla";
-        }
-
-        RamLabel.Text = $"{Math.Max(1, _settings.DefaultMemoryMaxMb / 1024)} ГБ";
         string username = _settings.CurrentAccount?.Username ?? "Player";
-        AccountLabel.Text = username;
         AccountNameText.Text = username;
         AvatarInitial.Text = username[..1].ToUpperInvariant();
     }
 
     private void ShowView(UIElement showing)
     {
-        UIElement[] all = { HomeView, InstancesView, SettingsView };
+        UIElement[] all = { InstancesView, SettingsView };
         UIElement? hiding = all.FirstOrDefault(v => !ReferenceEquals(v, showing) && v.Visibility == Visibility.Visible);
         if (hiding is not null)
         {
@@ -273,27 +250,28 @@ public partial class MainWindow : Window
         // string (Tag's DP type is object, so WPF has no other type hint to
         // convert against) — use string literals here too, not a C# bool,
         // or the trigger silently never matches.
-        HomeNavButton.Tag = "False";
         InstancesNavButton.Tag = "False";
         SettingsNavButton.Tag = "False";
         active.Tag = "True";
     }
 
-    private void HomeButton_Click(object sender, RoutedEventArgs e)
-    {
-        PageTitle.Text = "Главная";
-        PageSubtitle.Text = "Выбранная сборка";
-        UpdateHomeHero();
-        SetActiveNav(HomeNavButton);
-        ShowView(HomeView);
-    }
-
     private void InstancesButton_Click(object sender, RoutedEventArgs e)
     {
-        PageTitle.Text = "Сборки";
-        PageSubtitle.Text = "Управление установленными сборками";
         SetActiveNav(InstancesNavButton);
         ShowView(InstancesView);
+    }
+
+    private void OpenRootFolder_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            Directory.CreateDirectory(_rootDir);
+            Process.Start(new ProcessStartInfo(_rootDir) { UseShellExecute = true });
+        }
+        catch (Exception ex)
+        {
+            StatusText.Text = $"Не удалось открыть папку: {ex.Message}";
+        }
     }
 
     private void AccountChip_Click(object sender, RoutedEventArgs e)
@@ -310,7 +288,7 @@ public partial class MainWindow : Window
         var account = (Account)((FrameworkElement)sender).Tag;
         _settings.CurrentAccountId = account.Id;
         _settingsService.Save(_settings);
-        UpdateHomeHero();
+        UpdateAccountChip();
         AccountQuickSwitchPopup.IsOpen = false;
     }
 
@@ -330,14 +308,12 @@ public partial class MainWindow : Window
                 _selectedInstance = new InstanceViewModel(created);
             }
             RefreshInstances();
-            HomeButton_Click(sender, e);
+            InstancesButton_Click(sender, e);
         }
     }
 
     private void SettingsButton_Click(object sender, RoutedEventArgs e)
     {
-        PageTitle.Text = "Настройки";
-        PageSubtitle.Text = "Параметры лаунчера";
         SetActiveNav(SettingsNavButton);
         LoadSettingsView();
         ShowView(SettingsView);
@@ -403,7 +379,7 @@ public partial class MainWindow : Window
         NewAccountNameBox.Text = string.Empty;
         AccountsStatusText.Text = string.Empty;
         RefreshAccountsList();
-        UpdateHomeHero();
+        UpdateAccountChip();
     }
 
     private void SelectAccount_Click(object sender, RoutedEventArgs e)
@@ -412,7 +388,7 @@ public partial class MainWindow : Window
         _settings.CurrentAccountId = account.Id;
         _settingsService.Save(_settings);
         RefreshAccountsList();
-        UpdateHomeHero();
+        UpdateAccountChip();
     }
 
     private void DeleteAccount_Click(object sender, RoutedEventArgs e)
@@ -431,7 +407,7 @@ public partial class MainWindow : Window
         }
         _settingsService.Save(_settings);
         RefreshAccountsList();
-        UpdateHomeHero();
+        UpdateAccountChip();
     }
 
     private void GlassSwatch_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
@@ -473,7 +449,7 @@ public partial class MainWindow : Window
         // a music Play() call that can genuinely fail on a broken/missing
         // audio device.
         _settingsService.Save(_settings);
-        UpdateHomeHero();
+        UpdateAccountChip();
 
         _themeService.RainAutoDetectEnabled = _settings.RainAutoDetectEnabled;
         _themeService.WeatherApiKey = _settings.WeatherApiKey;
