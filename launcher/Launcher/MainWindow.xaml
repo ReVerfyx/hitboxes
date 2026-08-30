@@ -334,7 +334,7 @@
                                         <TextBlock x:Name="SettingsMemoryValueText" Text="4 ГБ" FontSize="14" FontWeight="Bold"
                                                    Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,8" />
                                         <Slider x:Name="SettingsMemorySlider" Minimum="4" Maximum="16" TickFrequency="1" IsSnapToTickEnabled="True"
-                                                MaxWidth="320" HorizontalAlignment="Left" ValueChanged="SettingsMemorySlider_ValueChanged" />
+                                                Width="320" HorizontalAlignment="Left" ValueChanged="SettingsMemorySlider_ValueChanged" />
                                         <Grid MaxWidth="320" HorizontalAlignment="Left" Margin="0,4,0,14">
                                             <TextBlock x:Name="SettingsMemoryMinLabel" Text="4 ГБ" FontSize="9"
                                                        Foreground="{DynamicResource TextSecondaryBrush}" HorizontalAlignment="Left" />
@@ -373,7 +373,7 @@
                                         <TextBlock Text="Дополнительно" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,14" />
                                         <CheckBox x:Name="SettingsMusicEnabledBox" Content="Музыка в главном меню" Margin="0,0,0,14" />
                                         <TextBlock Text="Громкость" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,4" />
-                                        <Slider x:Name="SettingsMusicVolumeSlider" Minimum="0" Maximum="1" MaxWidth="260" HorizontalAlignment="Left" Margin="0,0,0,14" />
+                                        <Slider x:Name="SettingsMusicVolumeSlider" Minimum="0" Maximum="1" Width="260" HorizontalAlignment="Left" Margin="0,0,0,14" />
                                         <CheckBox x:Name="SettingsRainAutoDetectBox" Content="Автоопределение дождя" Margin="0,0,0,14" />
                                         <TextBlock Text="Ключ OpenWeatherMap" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,6" />
                                         <TextBox x:Name="SettingsWeatherApiKeyBox" MaxWidth="320" HorizontalAlignment="Left" Margin="0,0,0,10" />
