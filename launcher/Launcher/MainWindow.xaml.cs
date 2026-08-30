@@ -94,6 +94,17 @@ public partial class MainWindow : Window
             if (App.ScreenshotMode) ScreenshotHarness.Log("MainWindow.Loaded: handler exiting.");
         };
         Closed += (_, _) => _musicService.Dispose();
+
+        // Fires on a background thread (Process.Exited) whenever a launched
+        // game dies within seconds of starting — the only way the UI finds
+        // out about a silent javaw crash, since there's no console window
+        // and the earlier "Запущено" status was already shown optimistically.
+        LaunchLogService.EarlyCrashDetected += logPath =>
+        {
+            Dispatcher.Invoke(() => SetStatus(
+                $"Игра завершилась сразу после запуска — похоже на краш. Подробный лог: {logPath} " +
+                "(также доступен в Настройки → Разработчик)."));
+        };
     }
 
     /// <summary>Sets the status bar text and mirrors it into DevLog. Use the

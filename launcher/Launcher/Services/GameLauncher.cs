@@ -60,13 +60,23 @@ public sealed class GameLauncher
             FileName = javaExecutable,
             WorkingDirectory = gameDir,
             UseShellExecute = false,
+            // javaw has no console window at all — without redirecting
+            // output, a crash before Minecraft's own logging even starts
+            // (bad natives, wrong Java version, classpath issue) is
+            // completely invisible: no window, no error, nothing. Capture
+            // it so LaunchLogService can write it somewhere a user can
+            // actually find after "nothing happened".
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
         };
         foreach (var arg in args)
         {
             psi.ArgumentList.Add(arg);
         }
 
-        return Process.Start(psi) ?? throw new InvalidOperationException("Failed to start Java process.");
+        var process = Process.Start(psi) ?? throw new InvalidOperationException("Failed to start Java process.");
+        LaunchLogService.Attach(process, _rootDir, instance.Id);
+        return process;
     }
 
     private static IEnumerable<string> BuildJvmArgs(VersionDetail detail, Dictionary<string, string> subs,
