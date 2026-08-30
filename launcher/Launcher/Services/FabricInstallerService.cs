@@ -15,7 +15,12 @@ namespace Hitboxes.Launcher.Services;
 public sealed class FabricInstallerService
 {
     private const string MetaBaseUrl = "https://meta.fabricmc.net/v2/versions/loader";
-    private readonly HttpClient _http = new();
+    private HttpClient _http = NetworkSettings.CreateHttpClient();
+
+    /// <summary>Called after Settings saves a new proxy configuration so this
+    /// already-constructed, long-lived service picks it up immediately
+    /// instead of only on the next app start.</summary>
+    public void RefreshHttpClient() => _http = NetworkSettings.CreateHttpClient();
 
     public async Task<string?> GetLatestStableLoaderVersionAsync(string mcVersion)
     {

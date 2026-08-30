@@ -310,6 +310,30 @@
 
                                 <Border Style="{StaticResource StatCardStyle}" Padding="18" Margin="0,0,0,12">
                                     <StackPanel>
+                                        <TextBlock Text="Сеть" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,6" />
+                                        <TextBlock Text="Если Mojang недоступен напрямую (таймаут до launchermeta.mojang.com и т.п.) — включи прокси или зеркало."
+                                                   FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}" TextWrapping="Wrap" Margin="0,0,0,14" />
+
+                                        <CheckBox x:Name="SettingsProxyEnabledBox" Content="Использовать прокси" Margin="0,0,0,10" />
+                                        <TextBlock Text="Адрес (host:port, или http://.../socks5://...)" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,6" />
+                                        <TextBox x:Name="SettingsProxyAddressBox" MaxWidth="320" HorizontalAlignment="Left" Margin="0,0,0,10" />
+                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
+                                            <StackPanel Margin="0,0,10,0">
+                                                <TextBlock Text="Логин (необязательно)" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,6" />
+                                                <TextBox x:Name="SettingsProxyUsernameBox" Width="150" />
+                                            </StackPanel>
+                                            <StackPanel>
+                                                <TextBlock Text="Пароль" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,6" />
+                                                <PasswordBox x:Name="SettingsProxyPasswordBox" Width="150" />
+                                            </StackPanel>
+                                        </StackPanel>
+
+                                        <CheckBox x:Name="SettingsMirrorFallbackBox" Content="Автоматически пробовать зеркало Mojang, если прямое подключение не отвечает" TextWrapping="Wrap" />
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Style="{StaticResource StatCardStyle}" Padding="18" Margin="0,0,0,12">
+                                    <StackPanel>
                                         <TextBlock Text="Разработчик" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,6" />
                                         <TextBlock Text="Полный журнал (статус-бар + необработанные ошибки с трассировкой) — скопируй сюда, если что-то не работает."
                                                    FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}" TextWrapping="Wrap" Margin="0,0,0,10" />

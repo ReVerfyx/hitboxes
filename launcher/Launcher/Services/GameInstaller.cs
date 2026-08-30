@@ -10,11 +10,13 @@ namespace Hitboxes.Launcher.Services;
 /// Downloads exactly what the official version JSON points at: the client
 /// jar, the Windows-applicable libraries (native and pure-Java), and the
 /// asset objects listed in that version's asset index. Everything is
-/// fetched straight from Mojang's CDN URLs embedded in the manifest.
+/// fetched from Mojang's CDN URLs embedded in the manifest — through a
+/// user-configured proxy and/or a same-content mirror (see
+/// NetworkSettings) when the direct connection fails.
 /// </summary>
 public sealed class GameInstaller
 {
-    private readonly HttpClient _http = new();
+    private readonly HttpClient _http = NetworkSettings.CreateHttpClient();
     private readonly string _rootDir;
 
     public GameInstaller(string rootDir)
@@ -128,16 +130,35 @@ public sealed class GameInstaller
 
         Directory.CreateDirectory(Path.GetDirectoryName(destinationPath)!);
 
-        using var response = await _http.GetAsync(url);
-        response.EnsureSuccessStatusCode();
-
-        string tempPath = destinationPath + ".tmp";
-        await using (var fileStream = File.Create(tempPath))
+        HttpResponseMessage response;
+        try
         {
-            await response.Content.CopyToAsync(fileStream);
+            response = await _http.GetAsync(url);
+            response.EnsureSuccessStatusCode();
+        }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
+        {
+            string? mirrorUrl = NetworkSettings.TryGetMirrorUrl(url);
+            if (mirrorUrl is null)
+            {
+                throw;
+            }
+
+            DevLog.Log($"{url} unreachable ({ex.Message}) — retrying via mirror {mirrorUrl}");
+            response = await _http.GetAsync(mirrorUrl);
+            response.EnsureSuccessStatusCode();
         }
 
-        File.Move(tempPath, destinationPath, overwrite: true);
+        using (response)
+        {
+            string tempPath = destinationPath + ".tmp";
+            await using (var fileStream = File.Create(tempPath))
+            {
+                await response.Content.CopyToAsync(fileStream);
+            }
+
+            File.Move(tempPath, destinationPath, overwrite: true);
+        }
     }
 
     private static bool IsAllowedOnWindows(Library library)

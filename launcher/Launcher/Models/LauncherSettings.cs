@@ -23,4 +23,14 @@ public sealed class LauncherSettings
     public string? WeatherApiKey { get; set; }
     public string WeatherCity { get; set; } = "Moscow";
     public string GlassTintColor { get; set; } = "#8B7CFF";
+
+    // Some networks can't reach Mojang's endpoints directly (reported: a
+    // real connection timeout to launchermeta.mojang.com) — a proxy fixes
+    // that for every request this app makes; the mirror fallback below is
+    // a narrower fix scoped to just the Mojang hosts this app calls.
+    public bool ProxyEnabled { get; set; } = false;
+    public string ProxyAddress { get; set; } = string.Empty;
+    public string? ProxyUsername { get; set; }
+    public string? ProxyPassword { get; set; }
+    public bool MirrorFallbackEnabled { get; set; } = true;
 }

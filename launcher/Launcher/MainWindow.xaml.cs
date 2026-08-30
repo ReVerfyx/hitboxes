@@ -49,6 +49,16 @@ public partial class MainWindow : Window
         _musicService = new MainMenuMusicService(_rootDir);
         _settings = _settingsService.Load();
 
+        // Must happen before anything below touches the network: the
+        // service fields above already constructed their HttpClients with
+        // no-proxy defaults (field initializers run before this
+        // constructor body), so refresh them now that real settings are
+        // loaded instead of waiting for a Settings save.
+        NetworkSettings.ApplyFrom(_settings);
+        _versionService.RefreshHttpClient();
+        _fabricService.RefreshHttpClient();
+        _modrinthService.RefreshHttpClient();
+
         _themeService.RainAutoDetectEnabled = _settings.RainAutoDetectEnabled;
         _themeService.WeatherApiKey = _settings.WeatherApiKey;
         _themeService.WeatherCity = _settings.WeatherCity;
@@ -358,6 +368,12 @@ public partial class MainWindow : Window
         SettingsGlassHexBox.Text = _settings.GlassTintColor;
         UpdateSettingsGlassPreview();
 
+        SettingsProxyEnabledBox.IsChecked = _settings.ProxyEnabled;
+        SettingsProxyAddressBox.Text = _settings.ProxyAddress;
+        SettingsProxyUsernameBox.Text = _settings.ProxyUsername;
+        SettingsProxyPasswordBox.Password = _settings.ProxyPassword ?? string.Empty;
+        SettingsMirrorFallbackBox.IsChecked = _settings.MirrorFallbackEnabled;
+
         RefreshDevConsole();
 
         SettingsStatusText.Text = string.Empty;
@@ -498,6 +514,12 @@ public partial class MainWindow : Window
         _settings.WeatherCity = string.IsNullOrWhiteSpace(SettingsWeatherCityBox.Text) ? "Moscow" : SettingsWeatherCityBox.Text.Trim();
         _settings.GlassTintColor = string.IsNullOrWhiteSpace(SettingsGlassHexBox.Text) ? "#8B7CFF" : SettingsGlassHexBox.Text.Trim();
 
+        _settings.ProxyEnabled = SettingsProxyEnabledBox.IsChecked == true;
+        _settings.ProxyAddress = SettingsProxyAddressBox.Text.Trim();
+        _settings.ProxyUsername = string.IsNullOrWhiteSpace(SettingsProxyUsernameBox.Text) ? null : SettingsProxyUsernameBox.Text.Trim();
+        _settings.ProxyPassword = string.IsNullOrEmpty(SettingsProxyPasswordBox.Password) ? null : SettingsProxyPasswordBox.Password;
+        _settings.MirrorFallbackEnabled = SettingsMirrorFallbackBox.IsChecked == true;
+
         // Applying the visible RAM/account tiles first means a save is
         // always reflected on screen even if something below (theme/music)
         // throws — this used to be the last thing this method did, behind
@@ -505,6 +527,11 @@ public partial class MainWindow : Window
         // audio device.
         _settingsService.Save(_settings);
         UpdateAccountChip();
+
+        NetworkSettings.ApplyFrom(_settings);
+        _versionService.RefreshHttpClient();
+        _fabricService.RefreshHttpClient();
+        _modrinthService.RefreshHttpClient();
 
         _themeService.RainAutoDetectEnabled = _settings.RainAutoDetectEnabled;
         _themeService.WeatherApiKey = _settings.WeatherApiKey;

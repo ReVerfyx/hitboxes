@@ -16,12 +16,23 @@ namespace Hitboxes.Launcher.Services;
 public sealed class ModrinthService
 {
     private const string ApiBase = "https://api.modrinth.com/v2";
-    private readonly HttpClient _http;
+    private HttpClient _http;
 
     public ModrinthService()
     {
-        _http = new HttpClient();
-        _http.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("ReVerfyxClientLauncher", "0.1.0"));
+        _http = CreateClient();
+    }
+
+    /// <summary>Called after Settings saves a new proxy configuration so this
+    /// already-constructed, long-lived service picks it up immediately
+    /// instead of only on the next app start.</summary>
+    public void RefreshHttpClient() => _http = CreateClient();
+
+    private static HttpClient CreateClient()
+    {
+        var client = NetworkSettings.CreateHttpClient();
+        client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("ReVerfyxClientLauncher", "0.1.0"));
+        return client;
     }
 
     public async Task<List<ModrinthProject>> SearchModsAsync(string query, string mcVersion, string loader = "fabric")
