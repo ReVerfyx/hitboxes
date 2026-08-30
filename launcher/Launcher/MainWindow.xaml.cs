@@ -28,6 +28,7 @@ public partial class MainWindow : Window
     private readonly ThemeService _themeService = new();
     private readonly MinecraftVersionService _versionService = new();
     private readonly FabricInstallerService _fabricService = new();
+    private readonly ModrinthService _modrinthService = new();
     private readonly SettingsService _settingsService;
     private readonly InstanceService _instanceService;
     private readonly MainMenuMusicService _musicService;
@@ -505,6 +506,36 @@ public partial class MainWindow : Window
         }
     }
 
+    /// <summary>
+    /// Our own mod's fabric.mod.json genuinely depends on Fabric API (it uses
+    /// ClientTickEvents/KeyBindingHelper/WorldRenderEvents) — a dependency Fabric
+    /// Loader refuses to start without ("requires any version of fabric, which is
+    /// missing"). Fetch it from Modrinth the same way the in-app mod browser does,
+    /// matched to this instance's own Minecraft version, so a fresh Fabric instance
+    /// works out of the box instead of erroring on first launch.
+    /// </summary>
+    private async Task EnsureFabricApiInstalledAsync(string modsDir, string mcVersion)
+    {
+        if (Directory.EnumerateFiles(modsDir, "*.jar")
+            .Any(f => Path.GetFileName(f).Contains("fabric-api", StringComparison.OrdinalIgnoreCase)))
+        {
+            return;
+        }
+
+        try
+        {
+            var version = await _modrinthService.GetBestVersionAsync("fabric-api", mcVersion);
+            if (version is not null)
+            {
+                await _modrinthService.DownloadModAsync(version, modsDir);
+            }
+        }
+        catch (Exception ex)
+        {
+            StatusText.Text = $"Не удалось скачать Fabric API: {ex.Message}";
+        }
+    }
+
     private async Task LaunchInstanceAsync(InstanceViewModel vm, Button triggerButton)
     {
         string username = _settings.CurrentAccount?.Username ?? "Player";
@@ -546,6 +577,7 @@ public partial class MainWindow : Window
             {
                 string modsDir = _instanceService.GetModsDir(instance);
                 BundledModService.EnsureReVerfyxClientInstalled(modsDir);
+                await EnsureFabricApiInstalledAsync(modsDir, instance.McVersion);
             }
             launcher.Launch(installed, profile, instance, _settings, gameDir);
 
