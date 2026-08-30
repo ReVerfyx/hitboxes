@@ -1,5 +1,7 @@
 using System.Net;
 using System.Net.Http;
+using System.Net.Sockets;
+using System.Threading;
 using Hitboxes.Launcher.Models;
 
 namespace Hitboxes.Launcher.Services;
@@ -65,7 +67,18 @@ public static class NetworkSettings
     /// </summary>
     public static HttpClient CreateHttpClient()
     {
-        var handler = new HttpClientHandler();
+        var handler = new SocketsHttpHandler
+        {
+            // A very common real-world cause of "browser loads it fine,
+            // this app times out" on Windows: the machine has an IPv6
+            // route that goes nowhere (broken tunnel/router config) —
+            // browsers race IPv4/IPv6 with a short fallback timer, but
+            // .NET's default connection path can end up stuck waiting on
+            // the dead IPv6 attempt for the app's whole HttpClient
+            // timeout. Resolve DNS ourselves and always try IPv4
+            // addresses before IPv6 ones.
+            ConnectCallback = ConnectPreferIPv4Async,
+        };
 
         if (ProxyEnabled && !string.IsNullOrWhiteSpace(ProxyAddress))
         {
@@ -91,6 +104,31 @@ public static class NetworkSettings
         }
 
         return new HttpClient(handler) { Timeout = TimeSpan.FromSeconds(30) };
+    }
+
+    private static async ValueTask<System.IO.Stream> ConnectPreferIPv4Async(
+        SocketsHttpConnectionContext context, CancellationToken cancellationToken)
+    {
+        IPAddress[] addresses = await Dns.GetHostAddressesAsync(context.DnsEndPoint.Host, cancellationToken);
+        var ordered = addresses.OrderBy(a => a.AddressFamily == AddressFamily.InterNetwork ? 0 : 1);
+
+        Exception? lastError = null;
+        foreach (IPAddress address in ordered)
+        {
+            var socket = new Socket(address.AddressFamily, SocketType.Stream, ProtocolType.Tcp) { NoDelay = true };
+            try
+            {
+                await socket.ConnectAsync(address, context.DnsEndPoint.Port, cancellationToken);
+                return new NetworkStream(socket, ownsSocket: true);
+            }
+            catch (Exception ex)
+            {
+                lastError = ex;
+                socket.Dispose();
+            }
+        }
+
+        throw lastError ?? new SocketException((int)SocketError.HostNotFound);
     }
 
     /// <returns>The mirrored URL, or null if this host has no configured mirror.</returns>
