@@ -33,4 +33,9 @@ public sealed class LauncherSettings
     public string? ProxyUsername { get; set; }
     public string? ProxyPassword { get; set; }
     public bool MirrorFallbackEnabled { get; set; } = true;
+
+    /// <summary>"host1=mirror1,host2=mirror2" — no default mirror is baked
+    /// in (see NetworkSettings); this is entirely what the user pastes in
+    /// after confirming a candidate mirror actually answers.</summary>
+    public string MirrorOverrides { get; set; } = string.Empty;
 }

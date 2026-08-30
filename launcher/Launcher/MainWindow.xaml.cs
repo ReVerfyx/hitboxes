@@ -373,6 +373,7 @@ public partial class MainWindow : Window
         SettingsProxyUsernameBox.Text = _settings.ProxyUsername;
         SettingsProxyPasswordBox.Password = _settings.ProxyPassword ?? string.Empty;
         SettingsMirrorFallbackBox.IsChecked = _settings.MirrorFallbackEnabled;
+        SettingsMirrorOverridesBox.Text = _settings.MirrorOverrides;
 
         RefreshDevConsole();
 
@@ -519,6 +520,7 @@ public partial class MainWindow : Window
         _settings.ProxyUsername = string.IsNullOrWhiteSpace(SettingsProxyUsernameBox.Text) ? null : SettingsProxyUsernameBox.Text.Trim();
         _settings.ProxyPassword = string.IsNullOrEmpty(SettingsProxyPasswordBox.Password) ? null : SettingsProxyPasswordBox.Password;
         _settings.MirrorFallbackEnabled = SettingsMirrorFallbackBox.IsChecked == true;
+        _settings.MirrorOverrides = SettingsMirrorOverridesBox.Text.Trim();
 
         // Applying the visible RAM/account tiles first means a save is
         // always reflected on screen even if something below (theme/music)

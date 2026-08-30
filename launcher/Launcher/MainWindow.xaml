@@ -328,7 +328,11 @@
                                             </StackPanel>
                                         </StackPanel>
 
-                                        <CheckBox x:Name="SettingsMirrorFallbackBox" Content="Автоматически пробовать зеркало Mojang, если прямое подключение не отвечает" TextWrapping="Wrap" />
+                                        <CheckBox x:Name="SettingsMirrorFallbackBox" Content="Автоматически пробовать зеркало Mojang, если прямое подключение не отвечает"
+                                                  TextWrapping="Wrap" Margin="0,0,0,10" />
+                                        <TextBlock Text="Зеркало (host=зеркало через запятую, напр. launchermeta.mojang.com=example.com) — впиши сюда рабочий адрес, автоматически ничего не подставляется"
+                                                   FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}" TextWrapping="Wrap" Margin="0,0,0,6" />
+                                        <TextBox x:Name="SettingsMirrorOverridesBox" TextWrapping="Wrap" AcceptsReturn="False" />
                                     </StackPanel>
                                 </Border>
 

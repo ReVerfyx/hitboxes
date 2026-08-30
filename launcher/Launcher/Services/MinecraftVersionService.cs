@@ -6,10 +6,10 @@ namespace Hitboxes.Launcher.Services;
 
 /// <summary>
 /// Reads the official Mojang version manifest — through a user-configured
-/// proxy and/or a same-content mirror (see NetworkSettings) when the direct
-/// connection fails, since Mojang's endpoints aren't reachable from every
-/// network. Either path serves the exact same official data; no modified
-/// or third-party version source is ever consulted.
+/// proxy, and/or a user-supplied mirror host (see NetworkSettings) when the
+/// direct connection fails, since Mojang's endpoints aren't reachable from
+/// every network. No mirror is ever guessed at automatically; only what
+/// the user typed into Settings → Сеть is tried.
 /// </summary>
 public sealed class MinecraftVersionService
 {

@@ -9,8 +9,11 @@ namespace Hitboxes.Launcher.Services;
 /// applied from LauncherSettings whenever it's loaded or saved. Exists
 /// because Mojang's own endpoints (launchermeta/piston-meta/resources)
 /// are unreachable from some networks (reported: a real connection
-/// timeout to launchermeta.mojang.com:443) — a proxy or a mirror fixes
-/// that without needing the user to touch anything outside this app.
+/// timeout to launchermeta.mojang.com:443). The proxy is the general fix
+/// (works for any host); mirror hosts are user-supplied text in Settings
+/// → Сеть rather than anything hardcoded here — a mirror this code can't
+/// itself verify (no real internet access from where it runs) is worse
+/// than no mirror if it's silently wrong.
 /// </summary>
 public static class NetworkSettings
 {
@@ -19,6 +22,7 @@ public static class NetworkSettings
     public static string? ProxyUsername { get; private set; }
     public static string? ProxyPassword { get; private set; }
     public static bool MirrorFallbackEnabled { get; private set; } = true;
+    private static Dictionary<string, string> _customMirrorHosts = new();
 
     public static void ApplyFrom(LauncherSettings settings)
     {
@@ -27,6 +31,29 @@ public static class NetworkSettings
         ProxyUsername = settings.ProxyUsername;
         ProxyPassword = settings.ProxyPassword;
         MirrorFallbackEnabled = settings.MirrorFallbackEnabled;
+        _customMirrorHosts = ParseMirrorOverrides(settings.MirrorOverrides);
+    }
+
+    /// <summary>
+    /// "host1=mirror1,host2=mirror2" -> a lookup table. No mirror is
+    /// verifiable from where this code runs (no real internet access in
+    /// this dev/CI environment), so nothing is hardcoded as a default —
+    /// this is entirely what the user pastes into Settings → Сеть
+    /// themselves after confirming a candidate mirror actually answers
+    /// (e.g. by opening its version-manifest URL in a browser).
+    /// </summary>
+    private static Dictionary<string, string> ParseMirrorOverrides(string raw)
+    {
+        var map = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (string pair in raw.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        {
+            string[] parts = pair.Split('=', 2);
+            if (parts.Length == 2 && parts[0].Length > 0 && parts[1].Length > 0)
+            {
+                map[parts[0]] = parts[1];
+            }
+        }
+        return map;
     }
 
     /// <summary>
@@ -66,22 +93,7 @@ public static class NetworkSettings
         return new HttpClient(handler) { Timeout = TimeSpan.FromSeconds(30) };
     }
 
-    /// <summary>
-    /// Known-good 1:1 hostname swaps for a public Mojang mirror
-    /// (fastmcmirror.org) — same path/query, just a different host, so a
-    /// URL built for the official host works unchanged against the mirror.
-    /// Only the hosts this app actually calls directly are listed; unlisted
-    /// hosts (e.g. whatever a version JSON's own library URLs point at)
-    /// aren't guessed at.
-    /// </summary>
-    private static readonly Dictionary<string, string> MirrorHosts = new()
-    {
-        ["launchermeta.mojang.com"] = "launchermeta.fastmcmirror.org",
-        ["piston-meta.mojang.com"] = "piston-meta.fastmcmirror.org",
-        ["resources.download.minecraft.net"] = "resources.fastmcmirror.org",
-    };
-
-    /// <returns>The mirrored URL, or null if this host has no known mirror.</returns>
+    /// <returns>The mirrored URL, or null if this host has no configured mirror.</returns>
     public static string? TryGetMirrorUrl(string url)
     {
         if (!MirrorFallbackEnabled)
@@ -90,7 +102,7 @@ public static class NetworkSettings
         }
 
         var uri = new Uri(url);
-        if (!MirrorHosts.TryGetValue(uri.Host, out string? mirrorHost))
+        if (!_customMirrorHosts.TryGetValue(uri.Host, out string? mirrorHost))
         {
             return null;
         }

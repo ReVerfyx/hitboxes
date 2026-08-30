@@ -11,7 +11,7 @@ namespace Hitboxes.Launcher.Services;
 /// jar, the Windows-applicable libraries (native and pure-Java), and the
 /// asset objects listed in that version's asset index. Everything is
 /// fetched from Mojang's CDN URLs embedded in the manifest — through a
-/// user-configured proxy and/or a same-content mirror (see
+/// user-configured proxy, and/or a user-supplied mirror host (see
 /// NetworkSettings) when the direct connection fails.
 /// </summary>
 public sealed class GameInstaller
