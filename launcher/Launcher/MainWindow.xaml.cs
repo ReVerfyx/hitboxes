@@ -54,6 +54,7 @@ public partial class MainWindow : Window
             if (App.ScreenshotMode) ScreenshotHarness.Log("MainWindow.Loaded: ThemeService.StartAsync done.");
 
             RefreshInstances();
+            SetActiveNav(HomeNavButton);
             if (App.ScreenshotMode) ScreenshotHarness.Log("MainWindow.Loaded: RefreshInstances done.");
 
             // Music is inaudible in a screenshot and NAudio touches a real
@@ -133,10 +134,17 @@ public partial class MainWindow : Window
         AccountLabel.Text = string.IsNullOrWhiteSpace(UsernameBox.Text) ? "Player" : UsernameBox.Text.Trim();
     }
 
-    private void ShowView(UIElement view)
+    private void ShowView(UIElement showing)
     {
-        HomeView.Visibility = ReferenceEquals(view, HomeView) ? Visibility.Visible : Visibility.Collapsed;
-        InstancesView.Visibility = ReferenceEquals(view, InstancesView) ? Visibility.Visible : Visibility.Collapsed;
+        UIElement hiding = ReferenceEquals(showing, HomeView) ? InstancesView : HomeView;
+        UiAnimations.CrossFadeSwitch(showing, hiding);
+    }
+
+    private void SetActiveNav(Button active)
+    {
+        HomeNavButton.Style = (Style)FindResource("GlassSecondaryButtonStyle");
+        InstancesNavButton.Style = (Style)FindResource("GlassSecondaryButtonStyle");
+        active.Style = (Style)FindResource("GlassButtonStyle");
     }
 
     private void HomeButton_Click(object sender, RoutedEventArgs e)
@@ -144,6 +152,7 @@ public partial class MainWindow : Window
         PageTitle.Text = "Главная";
         PageSubtitle.Text = "Выбранная сборка";
         UpdateHomeHero();
+        SetActiveNav(HomeNavButton);
         ShowView(HomeView);
     }
 
@@ -151,6 +160,7 @@ public partial class MainWindow : Window
     {
         PageTitle.Text = "Сборки";
         PageSubtitle.Text = "Управление установленными сборками";
+        SetActiveNav(InstancesNavButton);
         ShowView(InstancesView);
     }
 
@@ -267,6 +277,7 @@ public partial class MainWindow : Window
         }
 
         triggerButton.IsEnabled = false;
+        UiAnimations.StartPulse(triggerButton);
         var progress = new Progress<string>(msg => StatusText.Text = msg);
 
         try
@@ -312,6 +323,7 @@ public partial class MainWindow : Window
         }
         finally
         {
+            UiAnimations.StopPulse(triggerButton);
             triggerButton.IsEnabled = true;
         }
     }

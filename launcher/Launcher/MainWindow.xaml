@@ -6,37 +6,141 @@
         Background="{DynamicResource BackgroundBrush}"
         WindowStartupLocation="CenterScreen">
     <Grid Margin="16">
-        <Grid.ColumnDefinitions><ColumnDefinition Width="220"/><ColumnDefinition Width="14"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-        <Border Grid.Column="0" Background="#C90D0F16" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="22" Padding="14">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="220" />
+            <ColumnDefinition Width="14" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <Border Grid.Column="0" Style="{StaticResource GlassCardStyle}" CornerRadius="22" Padding="14">
             <DockPanel>
                 <StackPanel DockPanel.Dock="Top">
                     <StackPanel Orientation="Horizontal" Margin="4,3,4,25">
-                        <Border Width="38" Height="38" CornerRadius="12" Background="#8B7CFF"><TextBlock Text="R" FontSize="18" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/></Border>
-                        <StackPanel Margin="10,0,0,0" VerticalAlignment="Center"><TextBlock Text="ReVerfyx" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}"/><TextBlock Text="Launcher" FontSize="9" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,2,0,0"/></StackPanel>
+                        <Border Width="38" Height="38" CornerRadius="12" Background="{DynamicResource AccentBrush}">
+                            <TextBlock Text="R" FontSize="18" FontWeight="Bold" Foreground="White"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <StackPanel Margin="10,0,0,0" VerticalAlignment="Center">
+                            <TextBlock Text="ReVerfyx" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" />
+                            <TextBlock Text="Launcher" FontSize="9" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,2,0,0" />
+                        </StackPanel>
                     </StackPanel>
-                    <TextBlock Text="БИБЛИОТЕКА" FontSize="8" Foreground="{DynamicResource TextSecondaryBrush}" Margin="4,0,0,7"/>
-                    <Button Content="Главная" Style="{StaticResource GlassSecondaryButtonStyle}" Margin="0,0,0,4" Click="HomeButton_Click"/>
-                    <Button Content="Сборки" Style="{StaticResource GlassSecondaryButtonStyle}" Margin="0,0,0,4" Click="InstancesButton_Click"/>
-                    <Button Content="Настройки" Style="{StaticResource GlassSecondaryButtonStyle}" Click="SettingsButton_Click"/>
+                    <TextBlock Text="БИБЛИОТЕКА" FontSize="8" Foreground="{DynamicResource TextSecondaryBrush}" Margin="4,0,0,7" />
+                    <Button x:Name="HomeNavButton" Content="Главная" Style="{StaticResource GlassSecondaryButtonStyle}" Margin="0,0,0,4" Click="HomeButton_Click" />
+                    <Button x:Name="InstancesNavButton" Content="Сборки" Style="{StaticResource GlassSecondaryButtonStyle}" Margin="0,0,0,4" Click="InstancesButton_Click" />
+                    <Button Content="Настройки" Style="{StaticResource GlassSecondaryButtonStyle}" Click="SettingsButton_Click" />
                 </StackPanel>
-                <Border DockPanel.Dock="Bottom" Background="#151720" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="14" Padding="12">
-                    <StackPanel><TextBlock Text="ОФФЛАЙН АККАУНТ" FontSize="8" Foreground="{DynamicResource TextSecondaryBrush}"/><TextBox x:Name="UsernameBox" Text="Player" Margin="0,7,0,0" Height="27" VerticalContentAlignment="Center" BorderThickness="0" Background="Transparent" Foreground="{DynamicResource TextPrimaryBrush}" TextChanged="UsernameBox_TextChanged"/></StackPanel>
+                <Border DockPanel.Dock="Bottom" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}"
+                        BorderThickness="1.2" CornerRadius="14" Padding="12">
+                    <StackPanel>
+                        <TextBlock Text="ОФФЛАЙН АККАУНТ" FontSize="8" Foreground="{DynamicResource TextSecondaryBrush}" />
+                        <TextBox x:Name="UsernameBox" Text="Player" Margin="0,7,0,0" Padding="0,4" VerticalContentAlignment="Center"
+                                 BorderThickness="0" Background="Transparent" Foreground="{DynamicResource TextPrimaryBrush}"
+                                 TextChanged="UsernameBox_TextChanged" />
+                    </StackPanel>
                 </Border>
             </DockPanel>
         </Border>
+
         <Grid Grid.Column="2">
-            <Grid.RowDefinitions><RowDefinition Height="58"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
-            <Grid Grid.Row="0"><StackPanel VerticalAlignment="Center"><TextBlock x:Name="PageTitle" Text="Главная" FontSize="20" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}"/><TextBlock x:Name="PageSubtitle" Text="Выбранная сборка" FontSize="9" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,3,0,0"/></StackPanel><Button HorizontalAlignment="Right" Content="+  СОЗДАТЬ СБОРКУ" Style="{StaticResource GlassButtonStyle}" Padding="15,9" Click="NewInstanceButton_Click"/></Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="58" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <Grid Grid.Row="0">
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock x:Name="PageTitle" Text="Главная" FontSize="20" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" />
+                    <TextBlock x:Name="PageSubtitle" Text="Выбранная сборка" FontSize="9" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,3,0,0" />
+                </StackPanel>
+                <Button HorizontalAlignment="Right" Content="+  СОЗДАТЬ СБОРКУ" Style="{StaticResource GlassButtonStyle}" Padding="15,9" Click="NewInstanceButton_Click" />
+            </Grid>
+
             <Grid Grid.Row="1">
                 <Grid x:Name="HomeView">
-                    <Grid.RowDefinitions><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
-                    <Border Grid.Row="0" Background="#B20E1017" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="25" Padding="30">
-                        <Grid><StackPanel VerticalAlignment="Bottom"><TextBlock Text="ВЫБРАННАЯ СБОРКА" FontSize="9" Foreground="{DynamicResource TextSecondaryBrush}"/><TextBlock x:Name="SelectedName" Text="ReVerfyx" FontSize="40" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,6,0,0"/><TextBlock x:Name="SelectedSubtitle" Text="Minecraft 1.21.4 · Fabric" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,4,0,0"/><StackPanel Orientation="Horizontal" Margin="0,22,0,0"><Button x:Name="PlaySelectedButton" Content="▶  ИГРАТЬ" Style="{StaticResource GlassButtonStyle}" Padding="24,12" Click="PlaySelected_Click"/><Button x:Name="EditSelectedButton" Content="Настроить" Style="{StaticResource GlassSecondaryButtonStyle}" Padding="18,11" Margin="8,0,0,0" Click="EditSelected_Click"/></StackPanel></StackPanel><TextBlock Text="R" FontSize="220" FontWeight="Bold" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="#068B7CFF" Margin="0,0,55,20"/></Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Border Grid.Row="0" Style="{StaticResource GlassCardStyle}" CornerRadius="25" Padding="30">
+                        <Grid>
+                            <StackPanel VerticalAlignment="Bottom">
+                                <TextBlock Text="ВЫБРАННАЯ СБОРКА" FontSize="9" Foreground="{DynamicResource TextSecondaryBrush}" />
+                                <TextBlock x:Name="SelectedName" Text="ReVerfyx" FontSize="40" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,6,0,0" />
+                                <TextBlock x:Name="SelectedSubtitle" Text="Minecraft 1.21.4 · Fabric" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,4,0,0" />
+                                <StackPanel Orientation="Horizontal" Margin="0,22,0,0">
+                                    <Button x:Name="PlaySelectedButton" Content="▶  ИГРАТЬ" Style="{StaticResource GlassButtonStyle}" Padding="24,12" Click="PlaySelected_Click" />
+                                    <Button x:Name="EditSelectedButton" Content="Настроить" Style="{StaticResource GlassSecondaryButtonStyle}" Padding="18,11" Margin="8,0,0,0" Click="EditSelected_Click" />
+                                </StackPanel>
+                            </StackPanel>
+                            <TextBlock Text="R" FontSize="220" FontWeight="Bold" HorizontalAlignment="Right" VerticalAlignment="Center"
+                                       Foreground="#127B68F5" Margin="0,0,55,20" />
+                        </Grid>
                     </Border>
-                    <Grid Grid.Row="1" Margin="0,12,0,0"><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions><Border Background="#A80E1017" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="15" Padding="14" Margin="0,0,5,0"><StackPanel><TextBlock Text="ПАМЯТЬ" FontSize="8" Foreground="{DynamicResource TextSecondaryBrush}"/><TextBlock x:Name="RamLabel" Text="4 ГБ" FontSize="14" FontWeight="SemiBold" Margin="0,6,0,0"/></StackPanel></Border><Border Grid.Column="1" Background="#A80E1017" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="15" Padding="14" Margin="5,0"><StackPanel><TextBlock Text="ЗАГРУЗЧИК" FontSize="8" Foreground="{DynamicResource TextSecondaryBrush}"/><TextBlock x:Name="LoaderLabel" Text="Fabric" FontSize="14" FontWeight="SemiBold" Margin="0,6,0,0"/></StackPanel></Border><Border Grid.Column="2" Background="#A80E1017" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="15" Padding="14" Margin="5,0,0,0"><StackPanel><TextBlock Text="АККАУНТ" FontSize="8" Foreground="{DynamicResource TextSecondaryBrush}"/><TextBlock x:Name="AccountLabel" Text="Player" FontSize="14" FontWeight="SemiBold" Margin="0,6,0,0"/></StackPanel></Border></Grid>
+                    <Grid Grid.Row="1" Margin="0,12,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition />
+                            <ColumnDefinition />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+                        <Border Style="{StaticResource GlowCardStyle}" Padding="14" Margin="0,0,5,0">
+                            <StackPanel>
+                                <TextBlock Text="ПАМЯТЬ" FontSize="8" Foreground="{DynamicResource TextSecondaryBrush}" />
+                                <TextBlock x:Name="RamLabel" Text="4 ГБ" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,6,0,0" />
+                            </StackPanel>
+                        </Border>
+                        <Border Grid.Column="1" Style="{StaticResource GlowCardStyle}" Padding="14" Margin="5,0">
+                            <StackPanel>
+                                <TextBlock Text="ЗАГРУЗЧИК" FontSize="8" Foreground="{DynamicResource TextSecondaryBrush}" />
+                                <TextBlock x:Name="LoaderLabel" Text="Fabric" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,6,0,0" />
+                            </StackPanel>
+                        </Border>
+                        <Border Grid.Column="2" Style="{StaticResource GlowCardStyle}" Padding="14" Margin="5,0,0,0">
+                            <StackPanel>
+                                <TextBlock Text="АККАУНТ" FontSize="8" Foreground="{DynamicResource TextSecondaryBrush}" />
+                                <TextBlock x:Name="AccountLabel" Text="Player" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,6,0,0" />
+                            </StackPanel>
+                        </Border>
+                    </Grid>
                 </Grid>
-                <Grid x:Name="InstancesView" Visibility="Collapsed"><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions><TextBlock Grid.Row="0" Text="Установленные сборки" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,12"/><ScrollViewer Grid.Row="1"><ItemsControl x:Name="InstancesList"><ItemsControl.ItemTemplate><DataTemplate><Border Background="#A80E1017" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="17" Padding="15" Margin="0,0,0,8"><Grid><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><StackPanel><TextBlock Text="{Binding Name}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}"/><TextBlock Text="{Binding Subtitle}" FontSize="9" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,4,0,0"/></StackPanel><StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center"><Button Content="Играть" Style="{StaticResource GlassButtonStyle}" Tag="{Binding}" Click="PlayInstance_Click" Padding="12,7"/><Button Content="Настроить" Style="{StaticResource GlassSecondaryButtonStyle}" Tag="{Binding}" Click="EditInstance_Click" Padding="11,7" Margin="6,0,0,0"/><Button Content="Удалить" Style="{StaticResource GlassSecondaryButtonStyle}" Tag="{Binding}" Click="DeleteInstance_Click" Padding="11,7" Margin="6,0,0,0"/></StackPanel></Grid></Border></DataTemplate></ItemsControl.ItemTemplate></ItemsControl></ScrollViewer></Grid>
+
+                <Grid x:Name="InstancesView" Visibility="Collapsed" Opacity="0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0" Text="Установленные сборки" FontSize="14" FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,12" />
+                    <ScrollViewer Grid.Row="1">
+                        <ItemsControl x:Name="InstancesList">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Style="{StaticResource GlassCardStyle}" CornerRadius="17" Padding="15" Margin="0,0,0,8"
+                                            Loaded="InstanceCard_Loaded">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel>
+                                                <TextBlock Text="{Binding Name}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" />
+                                                <TextBlock Text="{Binding Subtitle}" FontSize="9" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,4,0,0" />
+                                            </StackPanel>
+                                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                                <Button Content="Играть" Style="{StaticResource GlassButtonStyle}" Tag="{Binding}" Click="PlayInstance_Click" Padding="12,7" />
+                                                <Button Content="Настроить" Style="{StaticResource GlassSecondaryButtonStyle}" Tag="{Binding}" Click="EditInstance_Click" Padding="11,7" Margin="6,0,0,0" />
+                                                <Button Content="Удалить" Style="{StaticResource GlassSecondaryButtonStyle}" Tag="{Binding}" Click="DeleteInstance_Click" Padding="11,7" Margin="6,0,0,0" />
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Grid>
             </Grid>
+
             <TextBlock x:Name="StatusText" Grid.Row="2" Margin="2,10,2,0" FontSize="10" TextWrapping="Wrap"
                        Foreground="{DynamicResource TextSecondaryBrush}" />
         </Grid>

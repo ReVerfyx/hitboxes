@@ -99,6 +99,7 @@ public sealed class ThemeService
         AnimateColor(ThemeResources.BackgroundTopStop, GradientStop.ColorProperty, palette.BackgroundTop, animate);
         AnimateColor(ThemeResources.BackgroundBottomStop, GradientStop.ColorProperty, palette.BackgroundBottom, animate);
         AnimateBrush(ThemeResources.PanelBrush, palette.Panel, animate);
+        AnimateBrush(ThemeResources.SurfaceBrush, palette.Surface, animate);
         AnimateBrush(ThemeResources.TextPrimaryBrush, palette.TextPrimary, animate);
         AnimateBrush(ThemeResources.TextSecondaryBrush, palette.TextSecondary, animate);
         AnimateBrush(ThemeResources.AccentBrush, palette.Accent, animate);

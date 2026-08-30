@@ -7,6 +7,7 @@ public readonly record struct ThemePalette(
     Color BackgroundTop,
     Color BackgroundBottom,
     Color Panel,
+    Color Surface,
     Color TextPrimary,
     Color TextSecondary,
     Color Accent,
@@ -15,37 +16,45 @@ public readonly record struct ThemePalette(
 
 public static class ThemePalettes
 {
-    // Round, frosted-glass panels over the vivid game-sky/landscape backdrop —
-    // translucent dark panels (the sky and pixel-art scenery show through)
-    // with a soft light edge instead of a solid HUD outline, plus the same
-    // consistent green "brand" accent across all three times of day.
+    // "Liquid Glass" palettes: Day is a genuinely light, milky-white/silver
+    // surface (dark ink on frosted glass); Night is graphite/near-black
+    // (light ink on dark frosted glass). The ReVerfyx brand accent — a
+    // violet-blue — stays IDENTICAL across every theme so it reads as a
+    // fixed brand color rather than something that drifts with the clock;
+    // only the neutrals (background/panel/surface/text/border) change.
+    private static readonly Color BrandAccent = Color.FromRgb(0x7B, 0x68, 0xF5);
+    private static readonly Color BrandAccentHover = Color.FromRgb(0x93, 0x84, 0xFF);
+
     public static readonly ThemePalette Day = new(
-        BackgroundTop: Color.FromRgb(0x5E, 0xBE, 0xFF),
-        BackgroundBottom: Color.FromRgb(0xC7, 0xEC, 0xFF),
-        Panel: Color.FromArgb(0xB0, 0x14, 0x19, 0x22),
-        TextPrimary: Color.FromRgb(0xF5, 0xF7, 0xFA),
-        TextSecondary: Color.FromRgb(0xAC, 0xB7, 0xC6),
-        Accent: Color.FromRgb(0x4C, 0xAF, 0x34),
-        AccentHover: Color.FromRgb(0x63, 0xC9, 0x3F),
-        Border: Color.FromArgb(0x55, 0xFF, 0xFF, 0xFF));
+        BackgroundTop: Color.FromRgb(0xF7, 0xF6, 0xFB),
+        BackgroundBottom: Color.FromRgb(0xE7, 0xE5, 0xF1),
+        Panel: Color.FromArgb(0xCC, 0xFF, 0xFF, 0xFF),
+        Surface: Color.FromArgb(0x1C, 0x25, 0x22, 0x40),
+        TextPrimary: Color.FromRgb(0x1D, 0x1B, 0x24),
+        TextSecondary: Color.FromRgb(0x6E, 0x6C, 0x7C),
+        Accent: BrandAccent,
+        AccentHover: BrandAccentHover,
+        Border: Color.FromArgb(0x2C, 0x20, 0x1E, 0x35));
 
     public static readonly ThemePalette Night = new(
-        BackgroundTop: Color.FromRgb(0x0B, 0x10, 0x2A),
-        BackgroundBottom: Color.FromRgb(0x24, 0x2A, 0x4C),
-        Panel: Color.FromArgb(0xB0, 0x12, 0x14, 0x1F),
-        TextPrimary: Color.FromRgb(0xEA, 0xF0, 0xFF),
-        TextSecondary: Color.FromRgb(0x9A, 0xA6, 0xD6),
-        Accent: Color.FromRgb(0x4C, 0xAF, 0x34),
-        AccentHover: Color.FromRgb(0x63, 0xC9, 0x3F),
-        Border: Color.FromArgb(0x40, 0xFF, 0xFF, 0xFF));
+        BackgroundTop: Color.FromRgb(0x17, 0x16, 0x1E),
+        BackgroundBottom: Color.FromRgb(0x0A, 0x0A, 0x10),
+        Panel: Color.FromArgb(0xB8, 0x18, 0x17, 0x20),
+        Surface: Color.FromArgb(0x99, 0x2A, 0x2A, 0x38),
+        TextPrimary: Color.FromRgb(0xF2, 0xF0, 0xFA),
+        TextSecondary: Color.FromRgb(0x9E, 0x9B, 0xB0),
+        Accent: BrandAccent,
+        AccentHover: BrandAccentHover,
+        Border: Color.FromArgb(0x38, 0xFF, 0xFF, 0xFF));
 
     public static readonly ThemePalette Rain = new(
-        BackgroundTop: Color.FromRgb(0x49, 0x59, 0x66),
-        BackgroundBottom: Color.FromRgb(0x84, 0x95, 0xA1),
-        Panel: Color.FromArgb(0xB0, 0x16, 0x1A, 0x21),
-        TextPrimary: Color.FromRgb(0xE7, 0xEE, 0xF2),
-        TextSecondary: Color.FromRgb(0xAF, 0xC0, 0xC9),
-        Accent: Color.FromRgb(0x4C, 0xAF, 0x34),
-        AccentHover: Color.FromRgb(0x63, 0xC9, 0x3F),
-        Border: Color.FromArgb(0x48, 0xFF, 0xFF, 0xFF));
+        BackgroundTop: Color.FromRgb(0x23, 0x2A, 0x38),
+        BackgroundBottom: Color.FromRgb(0x12, 0x16, 0x1D),
+        Panel: Color.FromArgb(0xB8, 0x18, 0x1C, 0x24),
+        Surface: Color.FromArgb(0x99, 0x28, 0x30, 0x3A),
+        TextPrimary: Color.FromRgb(0xE7, 0xED, 0xF2),
+        TextSecondary: Color.FromRgb(0x95, 0xA2, 0xAC),
+        Accent: BrandAccent,
+        AccentHover: BrandAccentHover,
+        Border: Color.FromArgb(0x34, 0xFF, 0xFF, 0xFF));
 }

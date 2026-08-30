@@ -27,6 +27,7 @@ public static class ThemeResources
         new GradientStopCollection { BackgroundTopStop, BackgroundBottomStop },
         new Point(0, 0), new Point(0, 1));
     public static readonly SolidColorBrush PanelBrush = new(ThemePalettes.Day.Panel);
+    public static readonly SolidColorBrush SurfaceBrush = new(ThemePalettes.Day.Surface);
     public static readonly SolidColorBrush TextPrimaryBrush = new(ThemePalettes.Day.TextPrimary);
     public static readonly SolidColorBrush TextSecondaryBrush = new(ThemePalettes.Day.TextSecondary);
     public static readonly SolidColorBrush AccentBrush = new(ThemePalettes.Day.Accent);
@@ -41,6 +42,7 @@ public static class ThemeResources
     {
         resources["BackgroundBrush"] = BackgroundBrush;
         resources["PanelBrush"] = PanelBrush;
+        resources["SurfaceBrush"] = SurfaceBrush;
         resources["TextPrimaryBrush"] = TextPrimaryBrush;
         resources["TextSecondaryBrush"] = TextSecondaryBrush;
         resources["AccentBrush"] = AccentBrush;
