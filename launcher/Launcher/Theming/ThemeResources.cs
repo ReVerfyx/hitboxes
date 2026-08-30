@@ -21,18 +21,31 @@ namespace Hitboxes.Launcher.Theming;
 /// </summary>
 public static class ThemeResources
 {
-    public static readonly GradientStop BackgroundTopStop = new(ThemePalettes.Day.BackgroundTop, 0);
-    public static readonly GradientStop BackgroundBottomStop = new(ThemePalettes.Day.BackgroundBottom, 1);
+    // WPF freezes a shared Freezable (brush/gradient stop) once it has
+    // actually been used to paint something during a real render pass —
+    // after that, even AnimateColor's plain SetValue silently no-ops (see
+    // its IsFrozen guard below). Since these brushes get consumed by many
+    // elements the instant the first window lays out, ThemeService's
+    // "apply the real Day/Night/Rain palette" call in Loaded almost always
+    // loses that race and never visibly takes effect. Sidestep it
+    // entirely by seeding the *static* initial value with the real
+    // current-time palette instead of always Day — that value is what
+    // actually survives, so it needs to be correct from the start.
+    private static readonly ThemePalette InitialPalette =
+        DateTime.Now.Hour is >= 6 and < 20 ? ThemePalettes.Day : ThemePalettes.Night;
+
+    public static readonly GradientStop BackgroundTopStop = new(InitialPalette.BackgroundTop, 0);
+    public static readonly GradientStop BackgroundBottomStop = new(InitialPalette.BackgroundBottom, 1);
     public static readonly LinearGradientBrush BackgroundBrush = new(
         new GradientStopCollection { BackgroundTopStop, BackgroundBottomStop },
         new Point(0, 0), new Point(0, 1));
-    public static readonly SolidColorBrush PanelBrush = new(ThemePalettes.Day.Panel);
-    public static readonly SolidColorBrush SurfaceBrush = new(ThemePalettes.Day.Surface);
-    public static readonly SolidColorBrush TextPrimaryBrush = new(ThemePalettes.Day.TextPrimary);
-    public static readonly SolidColorBrush TextSecondaryBrush = new(ThemePalettes.Day.TextSecondary);
-    public static readonly SolidColorBrush AccentBrush = new(ThemePalettes.Day.Accent);
-    public static readonly SolidColorBrush AccentHoverBrush = new(ThemePalettes.Day.AccentHover);
-    public static readonly SolidColorBrush BorderBrush = new(ThemePalettes.Day.Border);
+    public static readonly SolidColorBrush PanelBrush = new(InitialPalette.Panel);
+    public static readonly SolidColorBrush SurfaceBrush = new(InitialPalette.Surface);
+    public static readonly SolidColorBrush TextPrimaryBrush = new(InitialPalette.TextPrimary);
+    public static readonly SolidColorBrush TextSecondaryBrush = new(InitialPalette.TextSecondary);
+    public static readonly SolidColorBrush AccentBrush = new(InitialPalette.Accent);
+    public static readonly SolidColorBrush AccentHoverBrush = new(InitialPalette.AccentHover);
+    public static readonly SolidColorBrush BorderBrush = new(InitialPalette.Border);
 
     /// <summary>User-adjustable accent-color wash overlay (Settings -> "Цвет стекла"). Kept subtle now that
     /// panels are opaque HUD-style rather than frosted glass — it's a tint, not the whole look.</summary>
