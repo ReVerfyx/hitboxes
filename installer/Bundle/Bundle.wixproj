@@ -4,9 +4,6 @@
     <OutputType>Bundle</OutputType>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Bundle.wxs" />
-  </ItemGroup>
-  <ItemGroup>
     <PackageReference Include="WixToolset.Bal.wixext" Version="4.0.4" />
   </ItemGroup>
 </Project>

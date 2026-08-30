@@ -3,7 +3,4 @@
     <OutputName>ReVerfyxClientLauncher</OutputName>
     <OutputType>Package</OutputType>
   </PropertyGroup>
-  <ItemGroup>
-    <Compile Include="Package.wxs" />
-  </ItemGroup>
 </Project>
